@@ -40,9 +40,8 @@ button.control{cursor:pointer;transition:.14s ease} button.control:hover{border-
 #legend{position:absolute;left:12px;bottom:12px;z-index:5;background:rgba(33,27,21,.96);border:1px solid var(--ink-line);border-radius:5px;padding:11px 13px;font-size:11px;line-height:1.6;backdrop-filter:blur(4px);max-width:330px;box-shadow:0 8px 26px rgba(0,0,0,.22);display:none}
 #legend.open{display:block} #legend .title{font-family:var(--font-mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}.legend-row{display:flex;align-items:center;gap:7px}.legend-card{width:25px;height:13px;border:2px solid var(--christian);border-radius:3px;background:var(--ink-panel-2);display:inline-block;box-shadow:0 0 0 2px var(--muslim);margin:2px 3px 2px 2px}.swatch{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}.legend-line{width:22px;height:0;display:inline-block;flex:none;border-top:2px solid var(--family-line)}.legend-line.marriage{border-top:2px dashed var(--gold)}.legend-line.kin{border-top:2px dotted var(--kin)}.legend-line.social{border-top:1px dashed var(--social)}.legend-note{margin-top:5px;color:var(--parchment-dim);font-size:10px}
 #stats{position:absolute;right:12px;bottom:12px;z-index:4;font-family:var(--font-mono);font-size:9.5px;color:var(--parchment-dim);background:rgba(23,19,15,.82);border:1px solid rgba(59,49,38,.6);padding:5px 7px;border-radius:3px;pointer-events:none}
-#notice{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:4;background:rgba(23,19,15,.89);border:1px solid var(--ink-line);color:var(--parchment-dim);font-size:9.5px;font-family:var(--font-mono);padding:5px 8px;border-radius:3px;pointer-events:none;max-width:72%;text-align:center}
 #viewHint{position:absolute;left:12px;top:12px;z-index:4;font-family:var(--font-mono);font-size:9px;color:#8f826b;background:rgba(23,19,15,.73);padding:4px 6px;border-radius:3px;pointer-events:none}
-@media(max-width:820px){header{padding:9px 9px 8px}.head-row{gap:7px}h1{font-size:20px}.sub{font-size:8.8px}.toolbar{gap:4px;margin-top:7px}.control{height:30px;font-size:10.5px;padding:0 7px}#search{width:100%;flex:1 1 100%}.view-tabs{height:30px}.view-tab{font-size:10px;padding:0 7px}#notice{max-width:88%;font-size:8px}#stats{display:none}#panel{position:absolute;right:0;top:0;bottom:0;box-shadow:-8px 0 24px rgba(0,0,0,.3)}#panel.open{width:min(90vw,350px)}#legend{left:8px;bottom:8px;max-width:88vw}}
+@media(max-width:820px){header{padding:9px 9px 8px}.head-row{gap:7px}h1{font-size:20px}.sub{font-size:8.8px}.toolbar{gap:4px;margin-top:7px}.control{height:30px;font-size:10.5px;padding:0 7px}#search{width:100%;flex:1 1 100%}.view-tabs{height:30px}.view-tab{font-size:10px;padding:0 7px}#stats{display:none}#panel{position:absolute;right:0;top:0;bottom:0;box-shadow:-8px 0 24px rgba(0,0,0,.3)}#panel.open{width:min(90vw,350px)}#legend{left:8px;bottom:8px;max-width:88vw}}
 </style>
 </head>
 <body>
@@ -69,7 +68,7 @@ button.control{cursor:pointer;transition:.14s ease} button.control:hover{border-
   </div>
 </header>
 <div id="main">
-  <div id="cy"></div><div id="notice"></div><div id="viewHint"></div><div id="legend"></div><div id="stats"></div>
+  <div id="cy"></div><div id="viewHint"></div><div id="legend"></div><div id="stats"></div>
   <aside id="panel"><div id="panel-inner"><div class="empty-hint" id="emptyHint"></div></div></aside>
 </div>
 </div>
@@ -78,7 +77,7 @@ button.control{cursor:pointer;transition:.14s ease} button.control:hover{border-
 const I18N = {
   sq:{
     title:'Të jetosh në ishull — harta e personazheve',
-    subtitle:'romani i Ben Blushit · skanim i tekstit deri te FUND (f. 194) · vitet me ≈ janë vlerësime ose rindërtime kronologjike',
+    subtitle:'romani i Ben Blushit · vitet me ≈ janë vlerësime ose rindërtime kronologjike',
     search:'kërko emër, alias, familje…', fit:'shfaq të gjithë', reset:'pastro',
     scopeAll:'të gjithë personazhet', scopeNarrative:'rrëfimi kryesor', scopeHistorical:'histori / prapaskenë',
     faithAll:'të gjitha fetë', christian:'i krishterë', muslim:'mysliman', jewish:'hebre', other:'e paspecifikuar',
@@ -86,12 +85,11 @@ const I18N = {
     kin:'lidhje farefisnie', social:'lidhje shoqërore / politike', ring:'unaza = feja e lindjes · mbushja = feja më e vonshme',
     born:'Lindur', died:'Vdekur', birthplace:'Vendlindja', faithLabel:'Feja', nationality:'Përkatësia / kombësia', family:'Degë / familje', aliases:'Emra / alias', notes:'Shënim nga teksti', refs:'Referenca', relations:'Lidhje', close:'MBYLL ✕', empty:'kliko një person…',
     current:'aktuale', origin:'në lindje', changed:'ndryshim', approx:'rreth', unknown:'e panjohur',
-    chronology:'Kronologjia ndjek vitet e shprehura në roman; disa pasazhe kanë mospërputhje të brendshme, ndaj vlerësimet shënohen me ≈.',
     visible:'personazhe të dukshme'
   },
   it:{
     title:'Vivere sull’isola — mappa dei personaggi',
-    subtitle:'romanzo di Ben Blushi · testo analizzato fino a FUND (p. 194) · gli anni con ≈ sono stime o ricostruzioni cronologiche',
+    subtitle:'romanzo di Ben Blushi · gli anni con ≈ sono stime o ricostruzioni cronologiche',
     search:'cerca nome, alias, famiglia…', fit:'mostra tutti', reset:'azzera',
     scopeAll:'tutti i personaggi', scopeNarrative:'narrazione principale', scopeHistorical:'storia / antefatti',
     faithAll:'tutte le religioni', christian:'cristiano', muslim:'musulmano', jewish:'ebreo', other:'non specificata',
@@ -99,12 +97,11 @@ const I18N = {
     kin:'parentela', social:'legame sociale / politico', ring:'anello = religione d’origine · riempimento = religione successiva',
     born:'Nascita', died:'Morte', birthplace:'Luogo di nascita', faithLabel:'Religione', nationality:'Appartenenza / nazionalità', family:'Ramo / famiglia', aliases:'Nomi / alias', notes:'Nota dal testo (sq)', refs:'Riferimenti', relations:'Relazioni', close:'CHIUDI ✕', empty:'seleziona un personaggio…',
     current:'successiva', origin:'d’origine', changed:'cambio', approx:'circa', unknown:'sconosciuto',
-    chronology:'La cronologia segue gli anni espliciti del romanzo; alcuni passaggi sono internamente incoerenti, quindi le stime sono segnate con ≈.',
     visible:'personaggi visibili'
   },
   en:{
     title:'Living on the Island — character map',
-    subtitle:'Ben Blushi’s novel · text scanned through FUND (p. 194) · years marked ≈ are estimates or chronological reconstructions',
+    subtitle:'Ben Blushi’s novel · years marked ≈ are estimates or chronological reconstructions',
     search:'search name, alias, family…', fit:'fit all', reset:'clear',
     scopeAll:'all characters', scopeNarrative:'main narrative', scopeHistorical:'history / backstory',
     faithAll:'all religions', christian:'Christian', muslim:'Muslim', jewish:'Jewish', other:'unspecified',
@@ -112,7 +109,6 @@ const I18N = {
     kin:'kinship', social:'social / political link', ring:'ring = religion at birth · fill = later religion',
     born:'Born', died:'Died', birthplace:'Birthplace', faithLabel:'Religion', nationality:'Affiliation / nationality', family:'Branch / family', aliases:'Names / aliases', notes:'Book note (sq)', refs:'References', relations:'Relationships', close:'CLOSE ✕', empty:'click a character…',
     current:'later', origin:'at birth', changed:'change', approx:'about', unknown:'unknown',
-    chronology:'The chronology follows explicit years in the novel; some passages are internally inconsistent, so estimates are marked ≈.',
     visible:'visible characters'
   }
 };
@@ -392,6 +388,17 @@ function buildTimelinePositions(){
 }
 buildTimelinePositions();
 
+// Immutable canonical coordinates for deterministic view switching.
+// IMPORTANT: Cytoscape may mutate position objects supplied to graph elements/layouts,
+// so the canonical snapshots must never be passed by reference.
+function snapshotPositions(src){
+  const out={};
+  Object.entries(src).forEach(([id,pos])=>{out[id]=Object.freeze({x:Number(pos.x),y:Number(pos.y)});});
+  return Object.freeze(out);
+}
+const FAMILY_PRESET=snapshotPositions(familyPositions);
+const TIMELINE_PRESET=snapshotPositions(timelinePositions);
+
 // Build union junctions: two parents share one short junction-to-child path instead of two long parallel parent edges.
 const parentRels=RELATIONS.filter(r=>r.type==='parent');
 const parentsByChild={};parentRels.forEach(r=>(parentsByChild[r.target]??=[]).push(r.source));
@@ -404,7 +411,7 @@ Object.entries(parentsByChild).forEach(([child,parents])=>{
 });
 
 const elements=[];
-PEOPLE.forEach(p=>elements.push({data:{...p,id:p.id,label:nodeLabel(p),originColor:faithColor(p.religionOrigin),currentColor:faithColor(p.religionCurrent)},position:familyPositions[p.id],classes:`person role-${p.role}`}));
+PEOPLE.forEach(p=>elements.push({data:{...p,id:p.id,label:nodeLabel(p),originColor:faithColor(p.religionOrigin),currentColor:faithColor(p.religionCurrent)},position:{x:FAMILY_PRESET[p.id].x,y:FAMILY_PRESET[p.id].y},classes:`person role-${p.role}`}));
 RELATIONS.forEach((r,i)=>elements.push({data:{id:`orig_${i}`,source:r.source,target:r.target,type:r.type,label:r.label||''},classes:`orig-edge rel-${r.type}`}));
 unionMap.forEach((u,key)=>{
   elements.push({data:{id:u.id,unionKey:key},position:{x:0,y:0},classes:'union-node'});
@@ -457,21 +464,32 @@ function unionPosition(u,positions){
   return {x,y:Math.min(cyy-28,py+36)};
 }
 function applyPresetPositions(kind){
-  const source=kind==='timeline'?timelinePositions:familyPositions;
-  // Clone every coordinate on every restore. This prevents any layout engine from
-  // accidentally reusing/mutating objects that represent our canonical tree layout.
+  const source=kind==='timeline'?TIMELINE_PRESET:FAMILY_PRESET;
   const positions={};
   PEOPLE.forEach(p=>{const q=source[p.id];positions[p.id]={x:q.x,y:q.y};});
-  cy.batch(()=>{
-    PEOPLE.forEach(p=>cy.getElementById(p.id).position({x:positions[p.id].x,y:positions[p.id].y}));
-    unionMap.forEach(u=>{const q=unionPosition(u,positions);cy.getElementById(u.id).position({x:q.x,y:q.y});});
-    cy.nodes('.lane-label').forEach((n,i)=>n.position({x:X0+i*LANE_W,y:62}));
-    if(kind==='family'){
-      familyMeta.bands.forEach(y=>{const py=familyMeta.bandMeta[y].top;cy.getElementById(`band_${y}`).position({x:92,y:py});cy.getElementById(`band_r_${y}`).position({x:DECO_RIGHT,y:py});});
-    }else{
-      familyMeta.bands.forEach(y=>{const py=110+(y-minYear)*7.4;cy.getElementById(`band_${y}`).position({x:92,y:py});cy.getElementById(`band_${y}`).data('label',String(y));cy.getElementById(`band_r_${y}`).position({x:DECO_RIGHT,y:py});});
+
+  // Build a complete fresh position map for every node in the view. Running a real
+  // preset layout is more reliable than only assigning node.position() after COSE,
+  // because it formally replaces the previous layout state.
+  const nodePositions={};
+  PEOPLE.forEach(p=>{nodePositions[p.id]={x:positions[p.id].x,y:positions[p.id].y};});
+  unionMap.forEach(u=>{nodePositions[u.id]=unionPosition(u,positions);});
+  cy.nodes('.lane-label').forEach((n,i)=>{nodePositions[n.id()]={x:X0+i*LANE_W,y:62};});
+  familyMeta.bands.forEach(y=>{
+    const py=kind==='family'?familyMeta.bandMeta[y].top:110+(y-minYear)*7.4;
+    nodePositions[`band_${y}`]={x:92,y:py};
+    nodePositions[`band_r_${y}`]={x:DECO_RIGHT,y:py};
+    if(kind!=='family')cy.getElementById(`band_${y}`).data('label',String(y));
+  });
+
+  const preset=cy.layout({
+    name:'preset',animate:false,fit:false,padding:0,
+    positions:node=>{
+      const q=nodePositions[node.id()];
+      return q?{x:q.x,y:q.y}:{x:node.position('x'),y:node.position('y')};
     }
   });
+  preset.run();
 }
 function restoreBandLabels(){familyMeta.bands.forEach(y=>cy.getElementById(`band_${y}`).data('label',`${y}–${y+24}`));}
 
@@ -502,9 +520,14 @@ function applyView(){
     applyPresetPositions(currentView);
     if(currentView==='family')restoreBandLabels();
     updateHelperVisibility();
-    // Fit only after the preset coordinates have been committed, and ignore stale
-    // callbacks belonging to a view that the user has already left.
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{if(token===viewChangeToken&&currentView!=='network')fitReadable();}));
+    // Re-apply once on the next frame. This defeats any final queued position write
+    // from a force-directed layout that was stopped in the same click.
+    requestAnimationFrame(()=>{
+      if(token!==viewChangeToken||currentView==='network')return;
+      applyPresetPositions(currentView);
+      if(currentView==='family')restoreBandLabels();
+      requestAnimationFrame(()=>{if(token===viewChangeToken&&currentView!=='network')fitReadable();});
+    });
   }
   document.querySelectorAll('.view-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===currentView));
   document.getElementById('viewHint').textContent=currentView==='family'?I18N[lang].hintFamily:currentView==='timeline'?I18N[lang].hintTimeline:I18N[lang].hintNetwork;
@@ -538,7 +561,7 @@ function refreshUI(){
   faith.innerHTML=`<option value="all">${t.faithAll}</option><option value="christian">${t.christian}</option><option value="muslim">${t.muslim}</option><option value="jewish">${t.jewish}</option><option value="other">${t.other}</option>`;
   focus.innerHTML=`<option value="immediate">${t.focusImmediate}</option><option value="ancestors">${t.focusAncestors}</option><option value="descendants">${t.focusDescendants}</option><option value="all">${t.focusAll}</option>`;
   scope.value=oldScope;branch.value=oldBranch;faith.value=oldFaith;focus.value=oldFocus;activeFocusMode=focus.value;
-  document.getElementById('notice').textContent=t.chronology;document.getElementById('emptyHint').textContent=t.empty;renderLegend();
+  document.getElementById('emptyHint').textContent=t.empty;renderLegend();
   cy.nodes('.person').forEach(n=>{const p=personById(n.id());n.data('label',nodeLabel(p));});cy.nodes('.lane-label').forEach(n=>n.data('label',tr(LANE_LABEL[n.data('lane')])));
   document.getElementById('viewHint').textContent=currentView==='family'?t.hintFamily:currentView==='timeline'?t.hintTimeline:t.hintNetwork;
   if(activePersonId)openPanel(cy.getElementById(activePersonId));updateStats();
