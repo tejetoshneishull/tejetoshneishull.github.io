@@ -214,8 +214,8 @@ const PEOPLE = [
   P('jani','Jani',1756,'village','christian','christian','albanian','🇦🇱','Ibrahimi','main','Djalë i Ibrahimit dhe Anës, i krishterë; bëhet zejtar druri dhe martohet me Fatimjan.','f. 51–178',{birthApprox:true}),
   P('niko_paridi','Niko / Paridi',1759,'village','christian','christian','albanian','🇦🇱','Ibrahimi','main','Djali i katërt para konvertimit. Pas rrëfimeve të Sarës për Trojën kërkon të quhet Paridi.','f. 51–174',{birthApprox:true,aliases:['Niko','Paridi'],nameChangeYear:1785}),
   P('muhamedi','Muhamedi',1771,'village','muslim','muslim','albanian','🇦🇱','Ibrahimi','main','Djali i parë i lindur pas marrëveshjes fetare të prindërve; lind në maj 1771 dhe rritet mysliman. Më vonë martohet me Hanën dhe ndërton xhaminë e fshatit.','f. 52–193'),
-  P('ali_son','Ali',1773,'village','muslim','muslim','albanian','🇦🇱','Ibrahimi','family','Djali i Ibrahimit dhe Anës, i quajtur për nder të Ali Tepelenës. Më vonë shkon në Janinë.','f. 52–163'),
-  P('adem','Adem',1777,'village','muslim','muslim','albanian','🇦🇱','Ibrahimi','family','Djali më i vogël i Ibrahimit dhe Anës; vdes rreth moshës trevjeçare gjatë kolerës.','f. 52–57',{deathYear:1780}),
+  P('ali_son','Aliu',1773,'village','muslim','muslim','albanian','🇦🇱','Ibrahimi','family','Djali i Ibrahimit dhe Anës, i quajtur për nder të Ali Tepelenës. Më vonë shkon në Janinë.','f. 52–163'),
+  P('adem','Ademi',1777,'village','muslim','muslim','albanian','🇦🇱','Ibrahimi','family','Djali më i vogël i Ibrahimit dhe Anës; vdes rreth moshës trevjeçare gjatë kolerës.','f. 52–57',{deathYear:1780}),
 
   P('llambro','Llambro Xhavella',1720,'suli','christian','christian','suliot','🇦🇱','Xhavella','secondary','Daja i Anës dhe kapedan suliot; figurë e rëndësishme për Petron, Thanasin dhe konfliktet me Ali Pashën.','f. 6, 57–64, 155–160',{birthApprox:true,deathYear:1792,deathApprox:true}),
   P('foto','Foto Xhavella',1750,'suli','christian','christian','suliot','🇦🇱','Xhavella','secondary','Djali i madh i Llambro Xhavellës; shok fëmijërie i Petros dhe më vonë kapedan i Sulit.','f. 58, 155–163',{birthApprox:true}),
@@ -486,6 +486,15 @@ function buildFamilyPositions(){
     const xBilali=laneX('Bilali');
     familyPositions.fatimja.x=(xIbrahim+xBilali)/2;
   }
+
+  // Keep the first Ibrahim generation visually legible: Ibrahimi sits on the
+  // left side of his lane, closer to Ana Xhavella, while Vasili sits on the
+  // right side, vertically aligned with Hana below him.
+  if(familyPositions.ibrahimi && familyPositions.vasili){
+    const oldIbrahimX=familyPositions.ibrahimi.x;
+    familyPositions.ibrahimi.x=familyPositions.vasili.x;
+    familyPositions.vasili.x=oldIbrahimX;
+  }
   return {bands,bandMeta,totalHeight:yCursor+80};
 }
 const familyMeta=buildFamilyPositions();
@@ -512,6 +521,13 @@ function buildTimelinePositions(){
     const xIbrahim=laneX('Ibrahim');
     const xBilali=laneX('Bilali');
     timelinePositions.fatimja.x=(xIbrahim+xBilali)/2;
+  }
+
+  // Mirror the same left/right ordering used in the family-tree view.
+  if(timelinePositions.ibrahimi && timelinePositions.vasili){
+    const oldIbrahimX=timelinePositions.ibrahimi.x;
+    timelinePositions.ibrahimi.x=timelinePositions.vasili.x;
+    timelinePositions.vasili.x=oldIbrahimX;
   }
 }
 buildTimelinePositions();
