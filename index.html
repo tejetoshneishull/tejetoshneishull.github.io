@@ -568,9 +568,9 @@ familyMeta.bands.forEach(y=>{
 const cy=cytoscape({
   container:document.getElementById('cy'),elements,layout:{name:'preset'},wheelSensitivity:.18,minZoom:.18,maxZoom:2.5,autoungrabify:true,boxSelectionEnabled:false,
   style:[
-    {selector:'node.person',style:{'shape':'round-rectangle','width':NODE_W,'height':NODE_H,'background-color':'#2a231b','background-opacity':1,'border-width':2,'border-color':'data(originColor)','underlay-color':'data(currentColor)','underlay-opacity':.88,'underlay-padding':4,'label':'data(label)','color':'#eee4ce','font-family':'IBM Plex Sans, Noto Color Emoji','font-size':10.5,'font-weight':500,'text-valign':'center','text-halign':'center','text-wrap':'wrap','text-max-width':150,'line-height':1.25,'z-index':10}},
+    {selector:'node.person',style:{'shape':'round-rectangle','width':NODE_W,'height':NODE_H,'background-color':'#2a231b','background-opacity':1,'border-width':2,'border-color':'data(originColor)','underlay-color':'data(currentColor)','underlay-opacity':.88,'underlay-padding':4,'label':'data(label)','color':'#eee4ce','font-family':'IBM Plex Sans, Noto Color Emoji','font-size':10.5,'font-weight':500,'text-valign':'center','text-halign':'center','text-wrap':'wrap','text-max-width':156,'line-height':1.22,'z-index':10}},
     {selector:'node.person[confidence="medium"]',style:{'border-style':'dashed'}},
-    {selector:'node.person:selected',style:{'width':176,'height':60,'background-color':'#33291f','font-size':11,'underlay-padding':6}},
+    {selector:'node.person:selected',style:{'width':180,'height':62,'background-color':'#33291f','font-size':10.8,'text-max-width':168,'underlay-padding':6}},
     {selector:'node.union-node',style:{'shape':'diamond','width':7,'height':7,'background-color':'#c9a45f','border-width':0,'label':'','z-index':7}},
     {selector:'node.lane-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'Newsreader','font-style':'italic','font-size':14,'color':'#c9a45f','events':'no','z-index':1}},
     {selector:'node.year-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'IBM Plex Mono','font-size':9,'color':'#8d806b','text-halign':'right','text-margin-x':-12,'events':'no','z-index':0}},
@@ -594,8 +594,12 @@ const cy=cytoscape({
     {selector:'.hover-dim',style:{'opacity':.16}},
     {selector:'node.person.hover-node',style:{'opacity':1,'border-width':3,'background-color':'#342b21'}},
     {selector:'edge.hover-edge',style:{'opacity':1,'width':2.6,'z-index':12}},
-    {selector:'node.person.semantic-far',style:{'font-size':24,'font-weight':600,'height':44,'text-max-width':158}},
-    {selector:'node.person.semantic-mid',style:{'font-size':13,'font-weight':600,'height':50}},
+    // Semantic zoom must never make a label larger than its card. The previous
+    // far-view font was intentionally oversized to stay legible when zoomed out,
+    // but on some browser/font combinations that could wrap or clip names such as
+    // "Gjon Komneni". These values preserve legibility without overflowing.
+    {selector:'node.person.semantic-far',style:{'font-size':18,'font-weight':600,'height':48,'text-max-width':156,'text-wrap':'none'}},
+    {selector:'node.person.semantic-mid',style:{'font-size':12.2,'font-weight':600,'height':52,'text-max-width':156}},
     {selector:'.hidden-filter',style:{'display':'none'}},
     {selector:'.hidden-view',style:{'display':'none'}},
     {selector:'.connection-dim',style:{'opacity':.055}},
@@ -948,7 +952,7 @@ function openPanel(node){
   <div class="field"><div class="label">${t.nationality}</div><div class="value">${escapeHtml(textVal(p.nationality,NATION))}</div></div>${aliases}<div class="field"><div class="label">${t.notes}</div><div class="value">${escapeHtml(p.notes)}</div></div><div class="field"><div class="label">${t.refs}</div><div class="value refs">${escapeHtml(p.pages)}</div></div>
   <div class="field"><div class="label">${t.focusLabel}</div><div class="focus-tools"><button class="focus-btn ${activeFocusMode==='immediate'?'active':''}" data-fmode="immediate">${t.focusImmediate}</button><button class="focus-btn ${activeFocusMode==='ancestors'?'active':''}" data-fmode="ancestors">${t.focusAncestors}</button><button class="focus-btn ${activeFocusMode==='descendants'?'active':''}" data-fmode="descendants">${t.focusDescendants}</button><button class="focus-btn ${activeFocusMode==='all'?'active':''}" data-fmode="all">${t.focusAll}</button></div></div>
   <div class="field"><div class="label">${t.relations}</div><div class="relation-list">${rels||'—'}</div></div>`;
-  panel.classList.add('open');document.getElementById('closePanel').onclick=()=>closePanel();panelInner.querySelectorAll('[data-focus]').forEach(btn=>btn.onclick=()=>focusPerson(btn.dataset.focus));panelInner.querySelectorAll('[data-fmode]').forEach(btn=>btn.onclick=()=>{clearConnection(false);activeFocusMode=btn.dataset.fmode;document.getElementById('focusMode').value=activeFocusMode;applyFocus(p.id);openPanel(node)});cy.resize();
+  panel.classList.add('open');document.getElementById('closePanel').onclick=()=>closePanel();panelInner.querySelectorAll('[data-focus]').forEach(btn=>btn.onclick=()=>focusPerson(btn.dataset.focus));panelInner.querySelectorAll('[data-fmode]').forEach(btn=>btn.onclick=()=>{clearConnection(false);activeFocusMode=btn.dataset.fmode;document.getElementById('focusMode').value=activeFocusMode;applyFocus(p.id);openPanel(node)});cy.resize();ensureNodeFullyVisible(node,42);
 }
 function closePanel(){panel.classList.remove('open');activePersonId=null;clearFocus(true);cy.resize();updateSemanticZoom(true);scheduleUrlSync()}
 function focusPerson(id){clearConnection(false);const n=cy.getElementById(id);if(!n.length||n.hasClass('hidden-filter'))return;clearHover();cy.nodes('.person').unselect();n.select();activePersonId=id;applyFocus(id);updateSemanticZoom(true);cy.animate({center:{eles:n},zoom:Math.max(cy.zoom(),.72)},{duration:220});openPanel(n);scheduleUrlSync()}
@@ -985,7 +989,25 @@ function fitReadable(){
     const visibleLanes=new Set(visible.map(n=>laneFor(personById(n.id()))));
     cy.nodes('.lane-label').forEach(n=>{if(n.data('placement')==='bottom'&&visibleLanes.has(n.data('lane')))fitEles=fitEles.union(n);});
   }
-  cy.fit(fitEles,80);if(currentView!=='network'){const z=Math.min(cy.zoom()*1.18,.92);cy.zoom({level:z,renderedPosition:{x:document.getElementById('cy').clientWidth/2,y:document.getElementById('cy').clientHeight/2}})}
+  // Keep a real safety margin around the outer cards. Previously the code fitted
+  // the graph and then zoomed back in by 18%, which could push edge cards (and
+  // therefore their labels) partly outside the Cytoscape viewport.
+  cy.fit(fitEles,currentView==='network'?90:118);
+  if(currentView!=='network'&&cy.zoom()>.92){
+    cy.zoom({level:.92,renderedPosition:{x:document.getElementById('cy').clientWidth/2,y:document.getElementById('cy').clientHeight/2}});
+  }
+}
+function ensureNodeFullyVisible(node,padding=34){
+  if(!node||!node.length)return;
+  requestAnimationFrame(()=>{
+    try{
+      const bb=node.renderedBoundingBox({includeLabels:true,includeOverlays:true});
+      const w=cy.width(),h=cy.height();let dx=0,dy=0;
+      if(bb.x1<padding)dx=padding-bb.x1;else if(bb.x2>w-padding)dx=(w-padding)-bb.x2;
+      if(bb.y1<padding)dy=padding-bb.y1;else if(bb.y2>h-padding)dy=(h-padding)-bb.y2;
+      if(dx||dy)cy.panBy({x:dx,y:dy});
+    }catch(e){}
+  });
 }
 function updateStats(){const t=I18N[lang],visible=logicalVisiblePeople().length,view=currentView==='family'?t.viewFamily:currentView==='timeline'?t.viewTimeline:t.viewNetwork;document.getElementById('stats').textContent=`${visible}/${PEOPLE.length} ${t.visible} · ${RELATIONS.length} ${t.links} · ${view}`}
 
