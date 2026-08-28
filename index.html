@@ -358,21 +358,48 @@ function branchFor(p){
 const minYear=Math.min(...PEOPLE.map(p=>p.birthYear)), maxYear=Math.max(...PEOPLE.map(p=>p.birthYear));
 const NODE_W=166,NODE_H=54,LANE_W=420,X0=245;
 const familyPositions={}, timelinePositions={};
+// In the family-tree view, couples that fall in the same 25-year band are deliberately
+// placed side-by-side. This prevents a spouse line from cutting diagonally through unrelated
+// people (for example Jorgo Mavromatisi / Sheba) and makes the view read like a genealogy.
+function rowsForFamilyBand(arr){
+  const byId=new Map(arr.map(p=>[p.id,p]));
+  const unused=new Set(arr.map(p=>p.id));
+  const rows=[];
+  const pairRels=RELATIONS
+    .filter(r=>(r.type==='spouse'||r.type==='partner')&&byId.has(r.source)&&byId.has(r.target))
+    .slice().sort((a,b)=>{
+      const aa=Math.min(byId.get(a.source).birthYear,byId.get(a.target).birthYear);
+      const bb=Math.min(byId.get(b.source).birthYear,byId.get(b.target).birthYear);
+      return aa-bb||a.source.localeCompare(b.source);
+    });
+  pairRels.forEach(r=>{
+    if(!unused.has(r.source)||!unused.has(r.target))return;
+    rows.push([byId.get(r.source),byId.get(r.target)]); // source left, target right
+    unused.delete(r.source);unused.delete(r.target);
+  });
+  const singles=arr.filter(p=>unused.has(p.id)).sort((a,b)=>a.birthYear-b.birthYear||a.name.localeCompare(b.name));
+  for(let i=0;i<singles.length;i+=2)rows.push(singles.slice(i,i+2));
+  return rows;
+}
 function buildFamilyPositions(){
   const firstBand=Math.floor(minYear/25)*25, lastBand=Math.floor(maxYear/25)*25;
   const bands=[];for(let y=firstBand;y<=lastBand;y+=25)bands.push(y);
-  const groups=new Map();
+  const groups=new Map(), rowsByKey=new Map();
   PEOPLE.forEach(p=>{const band=Math.floor(p.birthYear/25)*25,key=`${laneFor(p)}|${band}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p)});
+  bands.forEach(b=>LANE_ORDER.forEach(l=>{const key=`${l}|${b}`;rowsByKey.set(key,rowsForFamilyBand(groups.get(key)||[]));}));
   let yCursor=130;
   const bandMeta={};
   bands.forEach(b=>{
     let maxRows=1;
-    LANE_ORDER.forEach(l=>{const arr=(groups.get(`${l}|${b}`)||[]);maxRows=Math.max(maxRows,Math.ceil(arr.length/2));});
+    LANE_ORDER.forEach(l=>{maxRows=Math.max(maxRows,(rowsByKey.get(`${l}|${b}`)||[]).length);});
     const h=Math.max(145,maxRows*72+55);bandMeta[b]={top:yCursor,height:h,center:yCursor+h/2};yCursor+=h;
   });
   bands.forEach(b=>LANE_ORDER.forEach((lane,li)=>{
-    const arr=(groups.get(`${lane}|${b}`)||[]).slice().sort((a,b)=>a.birthYear-b.birthYear||a.name.localeCompare(b.name));
-    arr.forEach((p,i)=>{const col=i%2,row=Math.floor(i/2),cx=X0+li*LANE_W+(col?94:-94),cy=bandMeta[b].top+48+row*72;familyPositions[p.id]={x:cx,y:cy};});
+    const rows=rowsByKey.get(`${lane}|${b}`)||[];
+    rows.forEach((row,rowIndex)=>row.forEach((person,col)=>{
+      const cx=X0+li*LANE_W+(col?94:-94),cy=bandMeta[b].top+48+rowIndex*72;
+      familyPositions[person.id]={x:cx,y:cy};
+    }));
   }));
   return {bands,bandMeta,totalHeight:yCursor+80};
 }
@@ -406,16 +433,20 @@ const unionMap=new Map(), unionForParentChild=new Map();
 Object.entries(parentsByChild).forEach(([child,parents])=>{
   const uniq=[...new Set(parents)];if(uniq.length<2)return;
   const key=uniq.slice().sort().join('__');
-  if(!unionMap.has(key))unionMap.set(key,{id:`union_${unionMap.size}`,parents:uniq,children:[]});
+  if(!unionMap.has(key)){
+    const coupleRel=RELATIONS.find(r=>(r.type==='spouse'||r.type==='partner')&&uniq.includes(r.source)&&uniq.includes(r.target));
+    unionMap.set(key,{id:`union_${unionMap.size}`,parents:uniq,children:[],coupleType:coupleRel?coupleRel.type:'coparent'});
+  }
   unionMap.get(key).children.push(child);uniq.forEach(pid=>unionForParentChild.set(`${pid}|${child}`,key));
 });
+const unionPairKeys=new Set(unionMap.keys());
 
 const elements=[];
 PEOPLE.forEach(p=>elements.push({data:{...p,id:p.id,label:nodeLabel(p),originColor:faithColor(p.religionOrigin),currentColor:faithColor(p.religionCurrent)},position:{x:FAMILY_PRESET[p.id].x,y:FAMILY_PRESET[p.id].y},classes:`person role-${p.role}`}));
 RELATIONS.forEach((r,i)=>elements.push({data:{id:`orig_${i}`,source:r.source,target:r.target,type:r.type,label:r.label||''},classes:`orig-edge rel-${r.type}`}));
 unionMap.forEach((u,key)=>{
   elements.push({data:{id:u.id,unionKey:key},position:{x:0,y:0},classes:'union-node'});
-  u.parents.forEach((pid,j)=>elements.push({data:{id:`arm_${u.id}_${j}`,source:pid,target:u.id,type:'family-arm'},classes:'family-helper family-arm'}));
+  u.parents.forEach((pid,j)=>elements.push({data:{id:`arm_${u.id}_${j}`,source:pid,target:u.id,type:'family-arm',coupleType:u.coupleType},classes:`family-helper family-arm arm-${u.coupleType}`}));
   u.children.forEach((cid,j)=>elements.push({data:{id:`child_${u.id}_${j}`,source:u.id,target:cid,type:'family-child'},classes:'family-helper family-child'}));
 });
 parentRels.filter(r=>!unionForParentChild.has(`${r.source}|${r.target}`)).forEach((r,i)=>elements.push({data:{id:`single_${i}`,source:r.source,target:r.target,type:'single-parent'},classes:'family-helper single-parent'}));
@@ -441,8 +472,12 @@ const cy=cytoscape({
     {selector:'node.year-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'IBM Plex Mono','font-size':9,'color':'#8d806b','text-halign':'right','text-margin-x':-12,'events':'no','z-index':0}},
     {selector:'node.guide-anchor',style:{'width':1,'height':1,'background-opacity':0,'border-width':0,'events':'no','z-index':0}},
     {selector:'edge.year-guide',style:{'width':.55,'line-color':'#3b3126','line-style':'dotted','opacity':.58,'events':'no','z-index':0}},
-    {selector:'edge.family-arm',style:{'curve-style':'straight','width':1.25,'line-color':'#9f9580','opacity':.78,'z-index':2}},
-    {selector:'edge.family-child, edge.single-parent',style:{'curve-style':'taxi','taxi-direction':'downward','taxi-turn':'48%','taxi-turn-min-distance':12,'width':1.45,'line-color':'#b8ad96','target-arrow-color':'#b8ad96','target-arrow-shape':'triangle','arrow-scale':.62,'opacity':.86,'z-index':2}},
+    // Parent-pair arms first move sideways into the central gutter, then vertically.
+    // This keeps them from visually attaching to unrelated cards in intervening rows.
+    {selector:'edge.family-arm',style:{'curve-style':'taxi','taxi-direction':'horizontal','taxi-turn':'50%','taxi-turn-min-distance':10,'width':1.45,'line-color':'#9f9580','opacity':.9,'z-index':4}},
+    {selector:'edge.family-arm.arm-spouse',style:{'line-color':'#c9a45f','line-style':'dashed'}},
+    {selector:'edge.family-arm.arm-partner',style:{'line-color':'#c9a45f','line-style':'dotted'}},
+    {selector:'edge.family-child, edge.single-parent',style:{'curve-style':'taxi','taxi-direction':'vertical','taxi-turn':'52%','taxi-turn-min-distance':12,'width':1.7,'line-color':'#c8bea7','target-arrow-color':'#c8bea7','target-arrow-shape':'triangle','arrow-scale':.65,'opacity':.96,'z-index':4}},
     {selector:'edge.orig-edge',style:{'curve-style':'bezier','opacity':.7,'z-index':2}},
     {selector:'edge.rel-parent',style:{'width':1.2,'line-color':'#b8ad96','target-arrow-color':'#b8ad96','target-arrow-shape':'triangle','arrow-scale':.6}},
     {selector:'edge.rel-spouse',style:{'curve-style':'straight','width':1.65,'line-color':'#c9a45f','line-style':'dashed'}},
@@ -515,8 +550,13 @@ function applyView(){
   }else{
     cy.nodes('.union-node,.lane-label,.year-label,.guide-anchor').removeClass('hidden-view');cy.edges('.family-helper,.year-guide').removeClass('hidden-view');
     cy.edges('.orig-edge').addClass('hidden-view');
-    // Keep marriages/partners visible in the tree; duplicated parent edges stay hidden.
-    cy.edges('.orig-edge.rel-spouse,.orig-edge.rel-partner').removeClass('hidden-view');
+    // Show a direct marriage/partner line only when the pair does NOT already have a
+    // parental union junction. For parent couples the junction itself represents the union,
+    // which avoids duplicate diagonals across the family tree.
+    cy.edges('.orig-edge.rel-spouse,.orig-edge.rel-partner').forEach(e=>{
+      const key=[e.source().id(),e.target().id()].sort().join('__');
+      if(!unionPairKeys.has(key))e.removeClass('hidden-view');
+    });
     applyPresetPositions(currentView);
     if(currentView==='family')restoreBandLabels();
     updateHelperVisibility();
