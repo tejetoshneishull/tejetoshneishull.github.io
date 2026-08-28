@@ -7,104 +7,71 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#191510;
-    --ink-panel:#231d16;
-    --ink-panel-2:#2a231b;
-    --ink-line:#3a3126;
-    --parchment:#ECE3CE;
-    --parchment-dim:#B8AC91;
-    --gold:#C8A35E;
-    --christian:#B5482F;
-    --muslim:#3E7A52;
-    --jewish:#3E6E93;
-    --other:#8A7F68;
-    --family-line:#B8AC91;
-    --kin:#7C8FA6;
-    --font-display:'Newsreader', Georgia, serif;
-    --font-body:'IBM Plex Sans', system-ui, sans-serif;
-    --font-mono:'IBM Plex Mono', monospace;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--ink);color:var(--parchment);font-family:var(--font-body);overflow:hidden}
-  button,input,select{font:inherit}
-  #app{height:100vh;display:flex;flex-direction:column}
-  header{padding:14px 18px 12px;border-bottom:1px solid var(--ink-line);background:var(--ink);z-index:5}
-  .head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
-  h1{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:24px;line-height:1.05;margin:0;color:var(--parchment)}
-  .sub{font-family:var(--font-mono);font-size:10.5px;line-height:1.45;color:var(--parchment-dim);margin-top:5px;max-width:850px}
-  .toolbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  .control{background:var(--ink-panel);border:1px solid var(--ink-line);color:var(--parchment);height:34px;border-radius:4px;padding:0 10px}
-  #search{width:min(290px,52vw)}
-  #search::placeholder{color:var(--parchment-dim)}
-  select.control{cursor:pointer}
-  button.control{cursor:pointer;transition:.15s ease}
-  button.control:hover{border-color:var(--gold);background:var(--ink-panel-2)}
-  #main{flex:1;min-height:0;display:flex;position:relative}
-  #cy{flex:1;min-width:0;min-height:0}
-  #legend{position:absolute;left:14px;bottom:14px;z-index:4;background:rgba(35,29,22,.93);border:1px solid var(--ink-line);border-radius:5px;padding:10px 12px;font-size:11.5px;line-height:1.55;backdrop-filter:blur(3px);max-width:310px}
-  #legend .title{font-family:var(--font-mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-  #legend .row{display:flex;align-items:center;gap:7px;white-space:nowrap}
-  .swatch{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
-  .legend-line{width:20px;height:0;display:inline-block;flex:none;border-top:2px solid var(--family-line)}
-  .legend-line.marriage{border-top:2px dashed var(--gold)}
-  .legend-line.kin{border-top:2px dotted var(--kin)}
-  .legend-line.social{border-top:1px dashed #70675c}
-  .legend-note{margin-top:5px;color:var(--parchment-dim);font-size:10px;white-space:normal}
-  #stats{position:absolute;right:14px;bottom:14px;z-index:3;font-family:var(--font-mono);font-size:10px;color:var(--parchment-dim);background:rgba(25,21,16,.78);padding:5px 8px;border-radius:3px;pointer-events:none}
-  #panel{width:0;overflow:hidden;flex:none;border-left:1px solid var(--ink-line);background:var(--ink-panel);transition:width .18s ease;position:relative;z-index:6}
-  #panel.open{width:340px}
-  #panel-inner{width:340px;height:100%;overflow:auto;padding:22px 20px 30px}
-  #panel h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:22px;line-height:1.1;margin:0 35px 4px 0}
-  .person-sub{color:var(--parchment-dim);font-size:11px;font-family:var(--font-mono);line-height:1.5}
-  .close{position:absolute;right:10px;top:10px;border:0;background:transparent;color:var(--parchment-dim);cursor:pointer;font-size:12px}
-  .field{margin-top:15px}
-  .label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--parchment-dim)}
-  .value{font-size:13px;line-height:1.5;margin-top:3px}
-  .faith-line{display:flex;align-items:center;gap:7px}
-  .faith-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-  .refs{font-family:var(--font-mono);font-size:10px;color:var(--gold)}
-  .relation-list{display:flex;flex-direction:column;gap:5px;margin-top:6px}
-  .rel-btn{border:1px solid var(--ink-line);background:var(--ink);color:var(--parchment);border-radius:3px;padding:6px 8px;text-align:left;cursor:pointer;font-size:11.5px;line-height:1.25}
-  .rel-btn:hover{border-color:var(--gold)}
-  .empty-hint{font-family:var(--font-display);font-style:italic;color:var(--parchment-dim);padding:22px}
-  #notice{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:3;background:rgba(25,21,16,.86);border:1px solid var(--ink-line);color:var(--parchment-dim);font-size:10px;font-family:var(--font-mono);padding:5px 8px;border-radius:3px;pointer-events:none;max-width:70%;text-align:center}
-  @media(max-width:760px){
-    header{padding:10px 10px 8px}.head-row{gap:8px}h1{font-size:20px}.sub{font-size:9px}.toolbar{margin-top:8px;gap:5px}.control{height:31px;padding:0 8px;font-size:11px}#search{width:100%;flex:1 1 100%}
-    #legend{left:8px;bottom:8px;font-size:10.5px;padding:8px}.legend-note{display:none}#stats{display:none}#notice{top:6px;max-width:88%;font-size:8.5px}
-    #panel{position:absolute;right:0;top:0;bottom:0;border-left:1px solid var(--ink-line);box-shadow:-8px 0 24px rgba(0,0,0,.28)}#panel.open{width:min(88vw,340px)}
-  }
+:root{
+  --ink:#17130f;--ink-panel:#211b15;--ink-panel-2:#2a221a;--ink-line:#3b3126;
+  --parchment:#eee4ce;--parchment-dim:#b9ad94;--gold:#c9a45f;
+  --christian:#b94c32;--muslim:#43815a;--jewish:#477da5;--other:#8b806b;
+  --family-line:#b8ad96;--kin:#7e90a8;--social:#71685e;
+  --font-display:'Newsreader',Georgia,serif;--font-body:'IBM Plex Sans',system-ui,sans-serif;--font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--ink);color:var(--parchment);font-family:var(--font-body);overflow:hidden}
+button,input,select{font:inherit} button{color:inherit} #app{height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px 10px;border-bottom:1px solid var(--ink-line);background:rgba(23,19,15,.98);z-index:8}
+.head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+h1{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:24px;line-height:1.05;margin:0;color:var(--parchment)}
+.sub{font-family:var(--font-mono);font-size:10px;line-height:1.45;color:var(--parchment-dim);margin-top:4px;max-width:920px}
+.toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.control{background:var(--ink-panel);border:1px solid var(--ink-line);color:var(--parchment);height:33px;border-radius:4px;padding:0 9px;font-size:12px}
+#search{width:min(255px,44vw)} #search::placeholder{color:var(--parchment-dim)} select.control{cursor:pointer}
+button.control{cursor:pointer;transition:.14s ease} button.control:hover{border-color:var(--gold);background:var(--ink-panel-2)}
+.view-tabs{height:33px;display:flex;border:1px solid var(--ink-line);border-radius:4px;overflow:hidden;background:var(--ink-panel)}
+.view-tab{border:0;border-right:1px solid var(--ink-line);background:transparent;color:var(--parchment-dim);padding:0 11px;cursor:pointer;font-size:11.5px}
+.view-tab:last-child{border-right:0}.view-tab:hover{color:var(--parchment)}.view-tab.active{background:#332719;color:var(--gold);box-shadow:inset 0 -2px 0 var(--gold)}
+#main{flex:1;min-height:0;display:flex;position:relative} #cy{flex:1;min-width:0;min-height:0}
+#panel{width:0;overflow:hidden;flex:none;border-left:1px solid var(--ink-line);background:var(--ink-panel);transition:width .18s ease;position:relative;z-index:7}
+#panel.open{width:350px} #panel-inner{width:350px;height:100%;overflow:auto;padding:22px 20px 34px}
+#panel h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:22px;line-height:1.12;margin:0 38px 4px 0}
+.person-sub{color:var(--parchment-dim);font-size:10.5px;font-family:var(--font-mono);line-height:1.5}.close{position:absolute;right:10px;top:10px;border:0;background:transparent;color:var(--parchment-dim);cursor:pointer;font-size:12px}
+.field{margin-top:14px}.label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--parchment-dim)}.value{font-size:13px;line-height:1.48;margin-top:3px}
+.faith-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.faith-dot{width:9px;height:9px;border-radius:50%;display:inline-block}.refs{font-family:var(--font-mono);font-size:10px;color:var(--gold)}
+.relation-list{display:flex;flex-direction:column;gap:5px;margin-top:6px}.rel-btn{border:1px solid var(--ink-line);background:var(--ink);color:var(--parchment);border-radius:4px;padding:7px 8px;text-align:left;cursor:pointer;font-size:11.5px;line-height:1.3}.rel-btn:hover{border-color:var(--gold)}
+.focus-tools{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}.focus-btn{border:1px solid var(--ink-line);background:var(--ink);color:var(--parchment-dim);border-radius:4px;padding:6px;cursor:pointer;font-size:10.5px}.focus-btn:hover,.focus-btn.active{border-color:var(--gold);color:var(--gold)}
+.empty-hint{font-family:var(--font-display);font-style:italic;color:var(--parchment-dim);padding:22px}
+#legend{position:absolute;left:12px;bottom:12px;z-index:5;background:rgba(33,27,21,.96);border:1px solid var(--ink-line);border-radius:5px;padding:11px 13px;font-size:11px;line-height:1.6;backdrop-filter:blur(4px);max-width:330px;box-shadow:0 8px 26px rgba(0,0,0,.22);display:none}
+#legend.open{display:block} #legend .title{font-family:var(--font-mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}.legend-row{display:flex;align-items:center;gap:7px}.legend-card{width:25px;height:13px;border:2px solid var(--christian);border-radius:3px;background:var(--ink-panel-2);display:inline-block;box-shadow:0 0 0 2px var(--muslim);margin:2px 3px 2px 2px}.swatch{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}.legend-line{width:22px;height:0;display:inline-block;flex:none;border-top:2px solid var(--family-line)}.legend-line.marriage{border-top:2px dashed var(--gold)}.legend-line.kin{border-top:2px dotted var(--kin)}.legend-line.social{border-top:1px dashed var(--social)}.legend-note{margin-top:5px;color:var(--parchment-dim);font-size:10px}
+#stats{position:absolute;right:12px;bottom:12px;z-index:4;font-family:var(--font-mono);font-size:9.5px;color:var(--parchment-dim);background:rgba(23,19,15,.82);border:1px solid rgba(59,49,38,.6);padding:5px 7px;border-radius:3px;pointer-events:none}
+#notice{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:4;background:rgba(23,19,15,.89);border:1px solid var(--ink-line);color:var(--parchment-dim);font-size:9.5px;font-family:var(--font-mono);padding:5px 8px;border-radius:3px;pointer-events:none;max-width:72%;text-align:center}
+#viewHint{position:absolute;left:12px;top:12px;z-index:4;font-family:var(--font-mono);font-size:9px;color:#8f826b;background:rgba(23,19,15,.73);padding:4px 6px;border-radius:3px;pointer-events:none}
+@media(max-width:820px){header{padding:9px 9px 8px}.head-row{gap:7px}h1{font-size:20px}.sub{font-size:8.8px}.toolbar{gap:4px;margin-top:7px}.control{height:30px;font-size:10.5px;padding:0 7px}#search{width:100%;flex:1 1 100%}.view-tabs{height:30px}.view-tab{font-size:10px;padding:0 7px}#notice{max-width:88%;font-size:8px}#stats{display:none}#panel{position:absolute;right:0;top:0;bottom:0;box-shadow:-8px 0 24px rgba(0,0,0,.3)}#panel.open{width:min(90vw,350px)}#legend{left:8px;bottom:8px;max-width:88vw}}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <div class="head-row">
-      <div>
-        <h1 id="title">Të jetosh në ishull — harta e personazheve</h1>
-        <div class="sub" id="subtitle"></div>
-      </div>
-      <select id="language" class="control" aria-label="Language">
-        <option value="sq">Shqip</option>
-        <option value="it">Italiano</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-    <div class="toolbar">
-      <input id="search" class="control" type="search" autocomplete="off">
-      <select id="scope" class="control"></select>
-      <select id="faith" class="control"></select>
-      <button id="fit" class="control" type="button"></button>
-      <button id="reset" class="control" type="button"></button>
-    </div>
-  </header>
-  <div id="main">
-    <div id="cy"></div>
-    <div id="notice"></div>
-    <div id="legend"></div>
-    <div id="stats"></div>
-    <aside id="panel"><div id="panel-inner"><div class="empty-hint" id="emptyHint"></div></div></aside>
+<header>
+  <div class="head-row">
+    <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
+    <select id="language" class="control" aria-label="Language"><option value="sq">Shqip</option><option value="it">Italiano</option><option value="en">English</option></select>
   </div>
+  <div class="toolbar">
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="family" type="button"></button>
+      <button class="view-tab" data-view="timeline" type="button"></button>
+      <button class="view-tab" data-view="network" type="button"></button>
+    </div>
+    <input id="search" class="control" type="search" autocomplete="off">
+    <select id="scope" class="control"></select>
+    <select id="branch" class="control"></select>
+    <select id="faith" class="control"></select>
+    <select id="focusMode" class="control"></select>
+    <button id="legendToggle" class="control" type="button"></button>
+    <button id="fit" class="control" type="button"></button>
+    <button id="reset" class="control" type="button"></button>
+  </div>
+</header>
+<div id="main">
+  <div id="cy"></div><div id="notice"></div><div id="viewHint"></div><div id="legend"></div><div id="stats"></div>
+  <aside id="panel"><div id="panel-inner"><div class="empty-hint" id="emptyHint"></div></div></aside>
+</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
 <script>
@@ -306,176 +273,316 @@ const RELATIONS = [
   R('arianit','halil_patrona','social','njohje në Stamboll'),R('arianit','sabatai','social','lidhje përmes rrëfimit / rrethit sabataist')
 ];
 
-const LANE_ORDER = ['Historik','Komneni','Ibrahimi','Xhavella','Fshati','Tepelena','Voskopoja','Benishi / Bakri','Bilali','Mjeshtrit'];
-const LANE_LABEL = {
-  Historik:{sq:'Histori / paraardhës',it:'Storia / antenati',en:'History / ancestors'},
-  Komneni:{sq:'Komnenët',it:'Komneni',en:'Komneni'}, Ibrahimi:{sq:'Familja e Ibrahimit',it:'Famiglia di Ibrahim',en:'Ibrahim family'},
-  Xhavella:{sq:'Xhavellat',it:'Xhavella',en:'Xhavella'}, Fshati:{sq:'Fshati / fqinjët',it:'Villaggio / vicini',en:'Village / neighbours'},
-  Tepelena:{sq:'Tepelena',it:'Tepeleni',en:'Tepelena'}, Voskopoja:{sq:'Voskopoja',it:'Voscopoli',en:'Voskopoja'},
-  'Benishi / Bakri':{sq:'Benishi / Bakri',it:'Benishi / Bakri',en:'Benishi / Bakri'}, Bilali:{sq:'Familja e Bilalit',it:'Famiglia di Bilal',en:'Bilal family'},
-  Mjeshtrit:{sq:'Mjeshtrit',it:'Maestranze',en:'Builders'}
+
+// --- Visual explorer overhaul -------------------------------------------------
+Object.assign(I18N.sq,{
+  viewFamily:'pema familjare',viewTimeline:'kronologji',viewNetwork:'rrjeti i lidhjeve',
+  branchAll:'të gjitha degët',branchKomneni:'Komneni',branchIbrahim:'Ibrahimi / Xhavella',branchVillage:'fshati / Tepelena',branchVosk:'Voskopoja',branchBenishi:'Benishi / Bakri',branchBilali:'Bilali',branchHistory:'historik',
+  focusImmediate:'familja e afërt',focusAncestors:'paraardhësit',focusDescendants:'pasardhësit',focusAll:'të gjitha lidhjet',focusLabel:'thekso',
+  legendButton:'legjenda',overview:'pamje e plotë',
+  hintFamily:'Pamja familjare: kartat janë grupuar në breza 25-vjeçarë. Kliko një person për të zbehur pjesën tjetër.',
+  hintTimeline:'Pamja kronologjike: pozicioni vertikal ndjek vitin e lindjes sa më afër që lejon lexueshmëria.',
+  hintNetwork:'Rrjeti i lidhjeve: shfaq edhe marrëdhëniet shoqërore, politike dhe farefisnore.',
+  cardLegend:'korniza = feja në lindje · halo = feja e mëvonshme · teksti tregon ndryshimin',
+  coupleJunction:'bashkimi i çiftit', genealogy:'lidhje familjare', connections:'lidhje narrative',
+  generation:'brezi', links:'lidhje'
+});
+Object.assign(I18N.it,{
+  viewFamily:'albero genealogico',viewTimeline:'cronologia',viewNetwork:'rete di relazioni',
+  branchAll:'tutti i rami',branchKomneni:'Komneni',branchIbrahim:'Ibrahim / Xhavella',branchVillage:'villaggio / Tepeleni',branchVosk:'Voscopoli',branchBenishi:'Benishi / Bakri',branchBilali:'Bilal',branchHistory:'storici',
+  focusImmediate:'famiglia vicina',focusAncestors:'antenati',focusDescendants:'discendenti',focusAll:'tutti i legami',focusLabel:'evidenzia',
+  legendButton:'legenda',overview:'vista completa',
+  hintFamily:'Albero genealogico: le carte sono raggruppate in fasce di 25 anni. Seleziona una persona per attenuare il resto.',
+  hintTimeline:'Cronologia: la posizione verticale segue l’anno di nascita per quanto possibile senza sacrificare la leggibilità.',
+  hintNetwork:'Rete di relazioni: mostra anche i legami sociali, politici e di parentela.',
+  cardLegend:'bordo = religione alla nascita · alone = religione successiva · il testo mostra il cambiamento',
+  coupleJunction:'unione della coppia',genealogy:'legami familiari',connections:'legami narrativi',generation:'generazione',links:'legami'
+});
+Object.assign(I18N.en,{
+  viewFamily:'family tree',viewTimeline:'timeline',viewNetwork:'relationship network',
+  branchAll:'all branches',branchKomneni:'Komneni',branchIbrahim:'Ibrahim / Xhavella',branchVillage:'village / Tepelena',branchVosk:'Voskopoja',branchBenishi:'Benishi / Bakri',branchBilali:'Bilal',branchHistory:'historical',
+  focusImmediate:'immediate family',focusAncestors:'ancestors',focusDescendants:'descendants',focusAll:'all connections',focusLabel:'highlight',
+  legendButton:'legend',overview:'overview',
+  hintFamily:'Family tree: cards are grouped into 25-year bands. Select a person to fade the rest.',
+  hintTimeline:'Timeline: vertical position follows birth year as closely as readability allows.',
+  hintNetwork:'Relationship network: also shows social, political and wider kinship links.',
+  cardLegend:'border = religion at birth · halo = later religion · text shows a change explicitly',
+  coupleJunction:'couple junction',genealogy:'family links',connections:'narrative links',generation:'generation',links:'links'
+});
+
+let lang='sq', currentView='family', activePersonId=null, activeFocusMode='immediate';
+const rootStyle=getComputedStyle(document.documentElement);
+const faithColor=k=>({christian:rootStyle.getPropertyValue('--christian'),muslim:rootStyle.getPropertyValue('--muslim'),jewish:rootStyle.getPropertyValue('--jewish'),other:rootStyle.getPropertyValue('--other')}[k]||rootStyle.getPropertyValue('--other')).trim();
+const faithGlyph=k=>({christian:'✝',muslim:'☪',jewish:'✡',other:'?'}[k]||'?');
+const tr=obj=>obj?.[lang]??obj?.sq??obj??'';
+const yearText=(year,approx=false)=>year?`${approx?'≈ ':''}${year}`:I18N[lang].unknown;
+const escapeHtml=(s='')=>String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+const personById=id=>PEOPLE.find(p=>p.id===id);
+const textVal=(key,map)=>map[key]?tr(map[key]):tr(key);
+const shortName=(s,n=25)=>s.length>n?s.slice(0,n-1)+'…':s;
+function religionLabel(v){return I18N[lang][v]||v}
+function relationshipLabel(type){return ({parent:I18N[lang].parent,spouse:I18N[lang].spouse,partner:I18N[lang].partner,sibling:I18N[lang].sibling,kin:I18N[lang].kin,social:I18N[lang].social})[type]||type}
+function nodeLabel(p){
+  const faith=p.religionOrigin===p.religionCurrent?faithGlyph(p.religionCurrent):`${faithGlyph(p.religionOrigin)}→${faithGlyph(p.religionCurrent)}`;
+  return `${p.flag} ${shortName(p.name)}\n${p.birthApprox?'≈ ':''}${p.birthYear} · ${faith}`;
+}
+
+// Five broad lanes keep the genealogical view readable without pretending that every family is isolated.
+const LANE_ORDER=['History','Komneni','Ibrahim','Voskopoja','BenishiBilali'];
+const LANE_LABEL={
+  History:{sq:'Histori / paraardhës',it:'Storia / antenati',en:'History / ancestors'},
+  Komneni:{sq:'Komnenët',it:'Komneni',en:'Komneni'},
+  Ibrahim:{sq:'Ibrahimi · Xhavella · fshati',it:'Ibrahim · Xhavella · villaggio',en:'Ibrahim · Xhavella · village'},
+  Voskopoja:{sq:'Voskopoja · mjeshtrit',it:'Voscopoli · maestranze',en:'Voskopoja · builders'},
+  BenishiBilali:{sq:'Benishi · Bakri · Bilali',it:'Benishi · Bakri · Bilal',en:'Benishi · Bakri · Bilal'}
 };
-function laneFor(fam){
-  if(fam.includes('historik')) return 'Historik';
-  if(['Komneni','Sheba / Komneni','Mavromatis','Kretë','Komneni · Kretë','Komneni / Kurila'].includes(fam)) return 'Komneni';
-  if(['Ibrahimi','Ibrahimi / Xhavella','Komneni / Ibrahimi','Bilali / Ibrahimi'].includes(fam)) return 'Ibrahimi';
-  if(fam==='Xhavella') return 'Xhavella';
-  if(fam==='Mihali / Zoica') return 'Fshati';
-  if(fam==='Tepelena') return 'Tepelena';
-  if(['Voskopoja','Kurila / Voskopoja'].includes(fam)) return 'Voskopoja';
-  if(['Benishi','Bakri','Bakri / Benishi'].includes(fam)) return 'Benishi / Bakri';
-  if(fam==='Bilali') return 'Bilali';
-  if(fam==='Mjeshtrit') return 'Mjeshtrit';
-  return 'Fshati';
+function laneFor(p){
+  const f=p.family;
+  if(p.role==='historical'||f.includes('historik')||f.includes('Stamboll · historik'))return'History';
+  if(['Komneni','Sheba / Komneni','Mavromatis','Kretë','Komneni · Kretë','Komneni / Kurila'].includes(f))return'Komneni';
+  if(['Voskopoja','Kurila / Voskopoja','Mjeshtrit'].includes(f))return'Voskopoja';
+  if(['Benishi','Bakri','Bakri / Benishi','Bilali'].includes(f))return'BenishiBilali';
+  return'Ibrahim';
+}
+function branchFor(p){
+  if(p.role==='historical'||p.family.includes('historik')||p.family.includes('Stamboll · historik'))return'history';
+  if(['Komneni','Sheba / Komneni','Mavromatis','Kretë','Komneni · Kretë','Komneni / Kurila'].includes(p.family))return'komneni';
+  if(['Voskopoja','Kurila / Voskopoja','Mjeshtrit'].includes(p.family))return'vosk';
+  if(['Benishi','Bakri','Bakri / Benishi'].includes(p.family))return'benishi';
+  if(['Bilali','Bilali / Ibrahimi'].includes(p.family))return'bilali';
+  if(['Tepelena','Mihali / Zoica'].includes(p.family))return'village';
+  return'ibrahim';
 }
 
-let lang = 'sq';
-const rootStyle = getComputedStyle(document.documentElement);
-const color = k => ({christian:rootStyle.getPropertyValue('--christian'),muslim:rootStyle.getPropertyValue('--muslim'),jewish:rootStyle.getPropertyValue('--jewish'),other:rootStyle.getPropertyValue('--other')}[k]||rootStyle.getPropertyValue('--other')).trim();
-const tr = (obj) => obj?.[lang] ?? obj?.sq ?? obj ?? '';
-const yearText = (year,approx=false) => year ? `${approx?'≈ ':''}${year}` : I18N[lang].unknown;
-
-const minYear = Math.min(...PEOPLE.map(p=>p.birthYear));
-const maxYear = Math.max(...PEOPLE.map(p=>p.birthYear));
-const Y_SCALE = 3.0, TOP = 105, X_START = 190, COL = 245;
-const laneIndex = lane => Math.max(0,LANE_ORDER.indexOf(lane));
-const bandUse = {};
-function posFor(p){
-  const lane=laneFor(p.family), band=Math.round(p.birthYear/7), key=`${lane}|${band}`;
-  const idx=bandUse[key]||0; bandUse[key]=idx+1;
-  return {x:X_START+laneIndex(lane)*COL + (idx%4)*47, y:TOP+(p.birthYear-minYear)*Y_SCALE + Math.floor(idx/4)*30};
+const minYear=Math.min(...PEOPLE.map(p=>p.birthYear)), maxYear=Math.max(...PEOPLE.map(p=>p.birthYear));
+const NODE_W=166,NODE_H=54,LANE_W=420,X0=245;
+const familyPositions={}, timelinePositions={};
+function buildFamilyPositions(){
+  const firstBand=Math.floor(minYear/25)*25, lastBand=Math.floor(maxYear/25)*25;
+  const bands=[];for(let y=firstBand;y<=lastBand;y+=25)bands.push(y);
+  const groups=new Map();
+  PEOPLE.forEach(p=>{const band=Math.floor(p.birthYear/25)*25,key=`${laneFor(p)}|${band}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p)});
+  let yCursor=130;
+  const bandMeta={};
+  bands.forEach(b=>{
+    let maxRows=1;
+    LANE_ORDER.forEach(l=>{const arr=(groups.get(`${l}|${b}`)||[]);maxRows=Math.max(maxRows,Math.ceil(arr.length/2));});
+    const h=Math.max(145,maxRows*72+55);bandMeta[b]={top:yCursor,height:h,center:yCursor+h/2};yCursor+=h;
+  });
+  bands.forEach(b=>LANE_ORDER.forEach((lane,li)=>{
+    const arr=(groups.get(`${lane}|${b}`)||[]).slice().sort((a,b)=>a.birthYear-b.birthYear||a.name.localeCompare(b.name));
+    arr.forEach((p,i)=>{const col=i%2,row=Math.floor(i/2),cx=X0+li*LANE_W+(col?94:-94),cy=bandMeta[b].top+48+row*72;familyPositions[p.id]={x:cx,y:cy};});
+  }));
+  return {bands,bandMeta,totalHeight:yCursor+80};
 }
+const familyMeta=buildFamilyPositions();
+function buildTimelinePositions(){
+  const bucketUse={};
+  PEOPLE.slice().sort((a,b)=>a.birthYear-b.birthYear).forEach(p=>{
+    const lane=laneFor(p), bucket=Math.round(p.birthYear/8),key=`${lane}|${bucket}`,idx=bucketUse[key]||0;bucketUse[key]=idx+1;
+    const x=X0+LANE_ORDER.indexOf(lane)*LANE_W+(idx%2?94:-94);
+    const y=110+(p.birthYear-minYear)*7.4+Math.floor(idx/2)*58;
+    timelinePositions[p.id]={x,y};
+  });
+}
+buildTimelinePositions();
+
+// Build union junctions: two parents share one short junction-to-child path instead of two long parallel parent edges.
+const parentRels=RELATIONS.filter(r=>r.type==='parent');
+const parentsByChild={};parentRels.forEach(r=>(parentsByChild[r.target]??=[]).push(r.source));
+const unionMap=new Map(), unionForParentChild=new Map();
+Object.entries(parentsByChild).forEach(([child,parents])=>{
+  const uniq=[...new Set(parents)];if(uniq.length<2)return;
+  const key=uniq.slice().sort().join('__');
+  if(!unionMap.has(key))unionMap.set(key,{id:`union_${unionMap.size}`,parents:uniq,children:[]});
+  unionMap.get(key).children.push(child);uniq.forEach(pid=>unionForParentChild.set(`${pid}|${child}`,key));
+});
 
 const elements=[];
-PEOPLE.forEach(p=>elements.push({data:{...p,id:p.id,label:`${p.flag} ${p.name}`,originColor:color(p.religionOrigin),currentColor:color(p.religionCurrent)},position:posFor(p),classes:`person role-${p.role}`}));
-RELATIONS.forEach((r,i)=>elements.push({data:{id:`rel_${i}`,source:r.source,target:r.target,type:r.type,label:r.label||''},classes:`relation rel-${r.type}`}));
+PEOPLE.forEach(p=>elements.push({data:{...p,id:p.id,label:nodeLabel(p),originColor:faithColor(p.religionOrigin),currentColor:faithColor(p.religionCurrent)},position:familyPositions[p.id],classes:`person role-${p.role}`}));
+RELATIONS.forEach((r,i)=>elements.push({data:{id:`orig_${i}`,source:r.source,target:r.target,type:r.type,label:r.label||''},classes:`orig-edge rel-${r.type}`}));
+unionMap.forEach((u,key)=>{
+  elements.push({data:{id:u.id,unionKey:key},position:{x:0,y:0},classes:'union-node'});
+  u.parents.forEach((pid,j)=>elements.push({data:{id:`arm_${u.id}_${j}`,source:pid,target:u.id,type:'family-arm'},classes:'family-helper family-arm'}));
+  u.children.forEach((cid,j)=>elements.push({data:{id:`child_${u.id}_${j}`,source:u.id,target:cid,type:'family-child'},classes:'family-helper family-child'}));
+});
+parentRels.filter(r=>!unionForParentChild.has(`${r.source}|${r.target}`)).forEach((r,i)=>elements.push({data:{id:`single_${i}`,source:r.source,target:r.target,type:'single-parent'},classes:'family-helper single-parent'}));
 
-// Timeline and lane labels live inside the graph, so they stay synchronized while panning/zooming.
-const GRID_RIGHT = X_START+(LANE_ORDER.length-1)*COL+190;
-for(let y=Math.ceil(minYear/25)*25;y<=maxYear+25;y+=25){
-  const py=TOP+(y-minYear)*Y_SCALE;
-  elements.push({data:{id:`year_${y}`,label:String(y)},position:{x:65,y:py},classes:'year-marker'});
-  elements.push({data:{id:`year_r_${y}`},position:{x:GRID_RIGHT,y:py},classes:'grid-anchor'});
-  elements.push({data:{id:`year_line_${y}`,source:`year_${y}`,target:`year_r_${y}`},classes:'year-guide'});
-}
-LANE_ORDER.forEach((lane,i)=>elements.push({data:{id:`fam_${i}`,lane,label:lane},position:{x:X_START+i*COL,y:45},classes:'family-label'}));
+// Decorations are graph elements, so they pan and zoom with the family tree.
+const DECO_RIGHT=X0+(LANE_ORDER.length-1)*LANE_W+220;
+LANE_ORDER.forEach((lane,i)=>elements.push({data:{id:`lane_${i}`,lane,label:tr(LANE_LABEL[lane])},position:{x:X0+i*LANE_W,y:62},classes:'lane-label'}));
+familyMeta.bands.forEach(y=>{
+  const py=familyMeta.bandMeta[y].top;
+  elements.push({data:{id:`band_${y}`,label:`${y}–${y+24}`},position:{x:92,y:py},classes:'year-label'});
+  elements.push({data:{id:`band_r_${y}`},position:{x:DECO_RIGHT,y:py},classes:'guide-anchor'});
+  elements.push({data:{id:`band_line_${y}`,source:`band_${y}`,target:`band_r_${y}`},classes:'year-guide'});
+});
 
-const cy = cytoscape({
-  container:document.getElementById('cy'), elements, layout:{name:'preset'}, wheelSensitivity:.22, minZoom:.12,maxZoom:3,
-  autoungrabify:true, boxSelectionEnabled:false,
+const cy=cytoscape({
+  container:document.getElementById('cy'),elements,layout:{name:'preset'},wheelSensitivity:.18,minZoom:.18,maxZoom:2.5,autoungrabify:true,boxSelectionEnabled:false,
   style:[
-    {selector:'node.person',style:{'background-color':'data(currentColor)','border-color':'data(originColor)','border-width':3,'width':31,'height':31,'label':'data(label)','color':'#ECE3CE','font-family':'IBM Plex Sans','font-size':10,'text-valign':'bottom','text-margin-y':5,'text-wrap':'wrap','text-max-width':150,'text-background-color':'#191510','text-background-opacity':.72,'text-background-padding':2,'z-index':10}},
+    {selector:'node.person',style:{'shape':'round-rectangle','width':NODE_W,'height':NODE_H,'background-color':'#2a231b','background-opacity':1,'border-width':2,'border-color':'data(originColor)','underlay-color':'data(currentColor)','underlay-opacity':.88,'underlay-padding':4,'label':'data(label)','color':'#eee4ce','font-family':'IBM Plex Sans','font-size':10.5,'font-weight':500,'text-valign':'center','text-halign':'center','text-wrap':'wrap','text-max-width':150,'line-height':1.25,'z-index':10}},
     {selector:'node.person[confidence="medium"]',style:{'border-style':'dashed'}},
-    {selector:'node.year-marker',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'IBM Plex Mono','font-size':9,'color':'#887d69','text-valign':'center','text-halign':'right','text-margin-x':-12,'events':'no','z-index':0}},
-    {selector:'node.grid-anchor',style:{'width':1,'height':1,'background-opacity':0,'border-width':0,'events':'no','z-index':0}},
-    {selector:'edge.year-guide',style:{'width':.45,'line-color':'#3a3126','line-style':'dotted','opacity':.55,'events':'no','z-index':0}},
-    {selector:'node.family-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'Newsreader','font-style':'italic','font-size':12,'color':'#C8A35E','text-valign':'center','events':'no','z-index':0}},
-    {selector:'edge.relation',style:{'curve-style':'bezier','opacity':.72,'z-index':1}},
-    {selector:'edge.rel-parent',style:{'width':1.45,'line-color':'#B8AC91','target-arrow-color':'#B8AC91','target-arrow-shape':'triangle','arrow-scale':.7}},
-    {selector:'edge.rel-spouse',style:{'width':1.5,'line-color':'#C8A35E','line-style':'dashed'}},
-    {selector:'edge.rel-partner',style:{'width':1.3,'line-color':'#C8A35E','line-style':'dotted'}},
-    {selector:'edge.rel-sibling',style:{'width':1.2,'line-color':'#7C8FA6','line-style':'dotted'}},
-    {selector:'edge.rel-kin',style:{'width':1.0,'line-color':'#7C8FA6','line-style':'dotted'}},
-    {selector:'edge.rel-social',style:{'width':.9,'line-color':'#70675c','line-style':'dashed','opacity':.42}},
-    {selector:'node:selected',style:{'border-width':6,'width':38,'height':38}},
-    {selector:'.dim',style:{'opacity':.09}},
+    {selector:'node.person:selected',style:{'width':176,'height':60,'background-color':'#33291f','font-size':11,'underlay-padding':6}},
+    {selector:'node.union-node',style:{'shape':'diamond','width':7,'height':7,'background-color':'#c9a45f','border-width':0,'label':'','z-index':7}},
+    {selector:'node.lane-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'Newsreader','font-style':'italic','font-size':14,'color':'#c9a45f','events':'no','z-index':1}},
+    {selector:'node.year-label',style:{'shape':'rectangle','width':1,'height':1,'background-opacity':0,'border-width':0,'label':'data(label)','font-family':'IBM Plex Mono','font-size':9,'color':'#8d806b','text-halign':'right','text-margin-x':-12,'events':'no','z-index':0}},
+    {selector:'node.guide-anchor',style:{'width':1,'height':1,'background-opacity':0,'border-width':0,'events':'no','z-index':0}},
+    {selector:'edge.year-guide',style:{'width':.55,'line-color':'#3b3126','line-style':'dotted','opacity':.58,'events':'no','z-index':0}},
+    {selector:'edge.family-arm',style:{'curve-style':'straight','width':1.25,'line-color':'#9f9580','opacity':.78,'z-index':2}},
+    {selector:'edge.family-child, edge.single-parent',style:{'curve-style':'taxi','taxi-direction':'downward','taxi-turn':'48%','taxi-turn-min-distance':12,'width':1.45,'line-color':'#b8ad96','target-arrow-color':'#b8ad96','target-arrow-shape':'triangle','arrow-scale':.62,'opacity':.86,'z-index':2}},
+    {selector:'edge.orig-edge',style:{'curve-style':'bezier','opacity':.7,'z-index':2}},
+    {selector:'edge.rel-parent',style:{'width':1.2,'line-color':'#b8ad96','target-arrow-color':'#b8ad96','target-arrow-shape':'triangle','arrow-scale':.6}},
+    {selector:'edge.rel-spouse',style:{'curve-style':'straight','width':1.65,'line-color':'#c9a45f','line-style':'dashed'}},
+    {selector:'edge.rel-partner',style:{'curve-style':'straight','width':1.35,'line-color':'#c9a45f','line-style':'dotted'}},
+    {selector:'edge.rel-sibling,edge.rel-kin',style:{'width':1.1,'line-color':'#7e90a8','line-style':'dotted'}},
+    {selector:'edge.rel-social',style:{'width':.9,'line-color':'#71685e','line-style':'dashed','opacity':.48}},
+    {selector:'.dim',style:{'opacity':.08}},
+    {selector:'.focus-edge',style:{'opacity':1,'width':2.2}},
+    {selector:'.focus-node',style:{'opacity':1}},
     {selector:'.hidden-filter',style:{'display':'none'}},
-    {selector:'.focus-edge',style:{'opacity':1,'width':2.4}},
-    {selector:'.focus-node',style:{'opacity':1}}
+    {selector:'.hidden-view',style:{'display':'none'}}
   ]
 });
 
-function religionLabel(v){return I18N[lang][v]||v}
-function relationshipLabel(type){return ({parent:I18N[lang].parent,spouse:I18N[lang].spouse,partner:I18N[lang].partner,sibling:I18N[lang].sibling,kin:I18N[lang].kin,social:I18N[lang].social})[type]||type}
-function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]))}
-function personById(id){return PEOPLE.find(p=>p.id===id)}
-function textVal(keyOrObj,map){return map[keyOrObj]?tr(map[keyOrObj]):tr(keyOrObj)}
-
-function renderLegend(){
-  const t=I18N[lang];
-  document.getElementById('legend').innerHTML=`
-    <div class="title">${t.legend}</div>
-    <div class="row"><span class="swatch" style="background:var(--christian)"></span>${t.christian}</div>
-    <div class="row"><span class="swatch" style="background:var(--muslim)"></span>${t.muslim}</div>
-    <div class="row"><span class="swatch" style="background:var(--jewish)"></span>${t.jewish}</div>
-    <div class="row"><span class="swatch" style="background:var(--other)"></span>${t.other}</div>
-    <div class="row"><span class="legend-line"></span>${t.parent}</div>
-    <div class="row"><span class="legend-line marriage"></span>${t.spouse}</div>
-    <div class="row"><span class="legend-line kin"></span>${t.kin}</div>
-    <div class="row"><span class="legend-line social"></span>${t.social}</div>
-    <div class="legend-note">${t.ring}</div>`;
+function unionPosition(u,positions){
+  const ps=u.parents.map(id=>positions[id]).filter(Boolean), cs=u.children.map(id=>positions[id]).filter(Boolean);
+  const x=ps.length?ps.reduce((s,p)=>s+p.x,0)/ps.length:(cs[0]?.x||0);
+  const py=ps.length?Math.max(...ps.map(p=>p.y)):0, cyy=cs.length?Math.min(...cs.map(p=>p.y)):py+80;
+  return {x,y:Math.min(cyy-28,py+36)};
 }
+function applyPresetPositions(kind){
+  const positions=kind==='timeline'?timelinePositions:familyPositions;
+  cy.batch(()=>{
+    PEOPLE.forEach(p=>cy.getElementById(p.id).position(positions[p.id]));
+    unionMap.forEach(u=>cy.getElementById(u.id).position(unionPosition(u,positions)));
+    cy.nodes('.lane-label').forEach((n,i)=>n.position({x:X0+i*LANE_W,y:62}));
+    if(kind==='family'){
+      familyMeta.bands.forEach(y=>{const py=familyMeta.bandMeta[y].top;cy.getElementById(`band_${y}`).position({x:92,y:py});cy.getElementById(`band_r_${y}`).position({x:DECO_RIGHT,y:py});});
+    }else{
+      familyMeta.bands.forEach(y=>{const py=110+(y-minYear)*7.4;cy.getElementById(`band_${y}`).position({x:92,y:py});cy.getElementById(`band_${y}`).data('label',String(y));cy.getElementById(`band_r_${y}`).position({x:DECO_RIGHT,y:py});});
+    }
+  });
+}
+function restoreBandLabels(){familyMeta.bands.forEach(y=>cy.getElementById(`band_${y}`).data('label',`${y}–${y+24}`));}
+
+function logicalVisiblePeople(){return cy.nodes('.person').filter(n=>!n.hasClass('hidden-filter')&&!n.hasClass('hidden-view'))}
+function isPersonVisible(id){const n=cy.getElementById(id);return n.length&&!n.hasClass('hidden-filter')&&!n.hasClass('hidden-view')}
+function applyView(){
+  cy.elements().removeClass('hidden-view');
+  if(currentView==='network'){
+    cy.nodes('.union-node,.lane-label,.year-label,.guide-anchor').addClass('hidden-view');cy.edges('.family-helper,.year-guide').addClass('hidden-view');
+    cy.edges('.orig-edge').removeClass('hidden-view');
+    const eles=cy.elements().filter(e=>e.isNode()?e.hasClass('person')&&!e.hasClass('hidden-filter'):e.hasClass('orig-edge')&&!e.hasClass('hidden-filter'));
+    if(eles.nodes().length){eles.layout({name:'cose',animate:false,fit:false,padding:70,nodeRepulsion:780000,idealEdgeLength:145,edgeElasticity:80,gravity:.16,numIter:900,randomize:true}).run();setTimeout(()=>fitReadable(),20);}
+  }else{
+    cy.nodes('.union-node,.lane-label,.year-label,.guide-anchor').removeClass('hidden-view');cy.edges('.family-helper,.year-guide').removeClass('hidden-view');
+    cy.edges('.orig-edge').addClass('hidden-view');
+    // Keep marriages/partners visible in the tree; the duplicated parent edges stay hidden.
+    cy.edges('.orig-edge.rel-spouse,.orig-edge.rel-partner').removeClass('hidden-view');
+    applyPresetPositions(currentView);if(currentView==='family')restoreBandLabels();
+    updateHelperVisibility();setTimeout(()=>fitReadable(),20);
+  }
+  document.querySelectorAll('.view-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===currentView));
+  document.getElementById('viewHint').textContent=currentView==='family'?I18N[lang].hintFamily:currentView==='timeline'?I18N[lang].hintTimeline:I18N[lang].hintNetwork;
+  clearFocus(false);updateStats();
+}
+function updateHelperVisibility(){
+  cy.nodes('.union-node').forEach(n=>{const u=[...unionMap.values()].find(x=>x.id===n.id());const anyParent=u.parents.some(isPersonVisible),anyChild=u.children.some(isPersonVisible);n.toggleClass('hidden-filter',!(anyParent&&anyChild));});
+  cy.edges('.family-helper').forEach(e=>{const s=e.source(),t=e.target();let show=true;if(s.hasClass('person'))show&=isPersonVisible(s.id());if(t.hasClass('person'))show&=isPersonVisible(t.id());if(s.hasClass('union-node'))show&=!s.hasClass('hidden-filter');if(t.hasClass('union-node'))show&=!t.hasClass('hidden-filter');e.toggleClass('hidden-filter',!show);});
+}
+
+function renderLegend(){const t=I18N[lang];document.getElementById('legend').innerHTML=`
+  <div class="title">${t.legend}</div>
+  <div class="legend-row"><span class="legend-card"></span><span>${t.cardLegend}</span></div>
+  <div class="legend-row"><span class="swatch" style="background:var(--christian)"></span>${t.christian}</div>
+  <div class="legend-row"><span class="swatch" style="background:var(--muslim)"></span>${t.muslim}</div>
+  <div class="legend-row"><span class="swatch" style="background:var(--jewish)"></span>${t.jewish}</div>
+  <div class="legend-row"><span class="swatch" style="background:var(--other)"></span>${t.other}</div>
+  <div class="legend-row"><span class="legend-line"></span>${t.parent}</div>
+  <div class="legend-row"><span class="legend-line marriage"></span>${t.spouse}</div>
+  <div class="legend-row"><span class="legend-line kin"></span>${t.kin}</div>
+  <div class="legend-row"><span class="legend-line social"></span>${t.social}</div>`;}
 
 function refreshUI(){
-  const t=I18N[lang]; document.documentElement.lang=lang; document.title=t.title;
-  document.getElementById('title').textContent=t.title; document.getElementById('subtitle').textContent=t.subtitle;
-  document.getElementById('search').placeholder=t.search; document.getElementById('fit').textContent=t.fit; document.getElementById('reset').textContent=t.reset;
-  document.getElementById('scope').innerHTML=`<option value="all">${t.scopeAll}</option><option value="narrative">${t.scopeNarrative}</option><option value="historical">${t.scopeHistorical}</option>`;
-  document.getElementById('faith').innerHTML=`<option value="all">${t.faithAll}</option><option value="christian">${t.christian}</option><option value="muslim">${t.muslim}</option><option value="jewish">${t.jewish}</option><option value="other">${t.other}</option>`;
-  document.getElementById('notice').textContent=t.chronology; document.getElementById('emptyHint').textContent=t.empty; renderLegend();
-  cy.nodes('.family-label').forEach(n=>n.data('label',tr(LANE_LABEL[n.data('lane')]))); updateStats();
-  // If a person is selected, redraw panel in the new language.
-  const selected=cy.nodes('.person:selected'); if(selected.length) openPanel(selected[0]);
+  const t=I18N[lang];document.documentElement.lang=lang;document.title=t.title;document.getElementById('title').textContent=t.title;document.getElementById('subtitle').textContent=t.subtitle;
+  document.getElementById('search').placeholder=t.search;document.getElementById('fit').textContent=t.overview;document.getElementById('reset').textContent=t.reset;document.getElementById('legendToggle').textContent=t.legendButton;
+  document.querySelector('[data-view="family"]').textContent=t.viewFamily;document.querySelector('[data-view="timeline"]').textContent=t.viewTimeline;document.querySelector('[data-view="network"]').textContent=t.viewNetwork;
+  const scope=document.getElementById('scope'),branch=document.getElementById('branch'),faith=document.getElementById('faith'),focus=document.getElementById('focusMode');
+  const oldScope=scope.value||'narrative',oldBranch=branch.value||'all',oldFaith=faith.value||'all',oldFocus=focus.value||'immediate';
+  scope.innerHTML=`<option value="all">${t.scopeAll}</option><option value="narrative">${t.scopeNarrative}</option><option value="historical">${t.scopeHistorical}</option>`;
+  branch.innerHTML=`<option value="all">${t.branchAll}</option><option value="komneni">${t.branchKomneni}</option><option value="ibrahim">${t.branchIbrahim}</option><option value="village">${t.branchVillage}</option><option value="vosk">${t.branchVosk}</option><option value="benishi">${t.branchBenishi}</option><option value="bilali">${t.branchBilali}</option><option value="history">${t.branchHistory}</option>`;
+  faith.innerHTML=`<option value="all">${t.faithAll}</option><option value="christian">${t.christian}</option><option value="muslim">${t.muslim}</option><option value="jewish">${t.jewish}</option><option value="other">${t.other}</option>`;
+  focus.innerHTML=`<option value="immediate">${t.focusImmediate}</option><option value="ancestors">${t.focusAncestors}</option><option value="descendants">${t.focusDescendants}</option><option value="all">${t.focusAll}</option>`;
+  scope.value=oldScope;branch.value=oldBranch;faith.value=oldFaith;focus.value=oldFocus;activeFocusMode=focus.value;
+  document.getElementById('notice').textContent=t.chronology;document.getElementById('emptyHint').textContent=t.empty;renderLegend();
+  cy.nodes('.person').forEach(n=>{const p=personById(n.id());n.data('label',nodeLabel(p));});cy.nodes('.lane-label').forEach(n=>n.data('label',tr(LANE_LABEL[n.data('lane')])));
+  document.getElementById('viewHint').textContent=currentView==='family'?t.hintFamily:currentView==='timeline'?t.hintTimeline:t.hintNetwork;
+  if(activePersonId)openPanel(cy.getElementById(activePersonId));updateStats();
 }
 
-const panel=document.getElementById('panel'), panelInner=document.getElementById('panel-inner');
-function faithHtml(p){
-  const t=I18N[lang];
-  if(p.religionOrigin===p.religionCurrent) return `<div class="faith-line"><span class="faith-dot" style="background:${color(p.religionCurrent)}"></span><span>${religionLabel(p.religionCurrent)}</span></div>`;
-  return `<div class="faith-line"><span class="faith-dot" style="background:${color(p.religionOrigin)}"></span><span>${religionLabel(p.religionOrigin)}</span><span>→</span><span class="faith-dot" style="background:${color(p.religionCurrent)}"></span><span>${religionLabel(p.religionCurrent)}${p.religionChangeYear?` (${p.religionChangeYear})`:''}</span></div>`;
-}
+const panel=document.getElementById('panel'),panelInner=document.getElementById('panel-inner');
+function faithHtml(p){if(p.religionOrigin===p.religionCurrent)return`<div class="faith-line"><span class="faith-dot" style="background:${faithColor(p.religionCurrent)}"></span><span>${religionLabel(p.religionCurrent)}</span></div>`;return`<div class="faith-line"><span class="faith-dot" style="background:${faithColor(p.religionOrigin)}"></span><span>${religionLabel(p.religionOrigin)}</span><span>→</span><span class="faith-dot" style="background:${faithColor(p.religionCurrent)}"></span><span>${religionLabel(p.religionCurrent)}${p.religionChangeYear?` (${p.religionChangeYear})`:''}</span></div>`}
 function connectedRelations(id){return RELATIONS.filter(r=>r.source===id||r.target===id)}
 function openPanel(node){
-  const p=personById(node.id()); if(!p)return; const t=I18N[lang];
-  const rels=connectedRelations(p.id).map((r,idx)=>{const otherId=r.source===p.id?r.target:r.source, other=personById(otherId); if(!other)return''; const directional=r.type==='parent'?(r.source===p.id?' → ':' ← '):' · '; return `<button class="rel-btn" data-focus="${escapeHtml(otherId)}"><strong>${relationshipLabel(r.type)}</strong>${directional}${escapeHtml(other.flag+' '+other.name)}${r.label?`<br><span style="color:var(--parchment-dim)">${escapeHtml(r.label)}</span>`:''}</button>`}).join('');
+  if(!node||!node.length)return;const p=personById(node.id());if(!p)return;activePersonId=p.id;const t=I18N[lang];
+  const rels=connectedRelations(p.id).map(r=>{const otherId=r.source===p.id?r.target:r.source,other=personById(otherId);if(!other)return'';const directional=r.type==='parent'?(r.source===p.id?' → ':' ← '):' · ';return`<button class="rel-btn" data-focus="${escapeHtml(otherId)}"><strong>${relationshipLabel(r.type)}</strong>${directional}${escapeHtml(other.flag+' '+other.name)}${r.label?`<br><span style="color:var(--parchment-dim)">${escapeHtml(r.label)}</span>`:''}</button>`}).join('');
   const aliases=p.aliases.length?`<div class="field"><div class="label">${t.aliases}</div><div class="value">${escapeHtml(p.aliases.join(' · '))}${p.nameChangeYear?` · ${p.nameChangeYear}`:''}</div></div>`:'';
-  panelInner.innerHTML=`<button class="close" id="closePanel">${t.close}</button>
-    <h2>${escapeHtml(p.flag+' '+p.name)}</h2><div class="person-sub">${escapeHtml(p.family)} · ${p.role}</div>
-    <div class="field"><div class="label">${t.born}</div><div class="value">${yearText(p.birthYear,p.birthApprox)}</div></div>
-    ${p.deathYear?`<div class="field"><div class="label">${t.died}</div><div class="value">${yearText(p.deathYear,p.deathApprox)}</div></div>`:''}
-    <div class="field"><div class="label">${t.birthplace}</div><div class="value">${escapeHtml(textVal(p.birthplace,PLACE))}</div></div>
-    <div class="field"><div class="label">${t.faithLabel}</div><div class="value">${faithHtml(p)}</div></div>
-    <div class="field"><div class="label">${t.nationality}</div><div class="value">${escapeHtml(textVal(p.nationality,NATION))}</div></div>
-    ${aliases}
-    <div class="field"><div class="label">${t.notes}</div><div class="value">${escapeHtml(p.notes)}</div></div>
-    <div class="field"><div class="label">${t.refs}</div><div class="value refs">${escapeHtml(p.pages)}</div></div>
-    <div class="field"><div class="label">${t.relations}</div><div class="relation-list">${rels||'—'}</div></div>`;
-  panel.classList.add('open');
-  document.getElementById('closePanel').onclick=closePanel;
-  panelInner.querySelectorAll('[data-focus]').forEach(btn=>btn.onclick=()=>focusPerson(btn.dataset.focus));
-  cy.resize();
+  panelInner.innerHTML=`<button class="close" id="closePanel">${t.close}</button><h2>${escapeHtml(p.flag+' '+p.name)}</h2><div class="person-sub">${escapeHtml(p.family)} · ${p.role}</div>
+  <div class="field"><div class="label">${t.born}</div><div class="value">${yearText(p.birthYear,p.birthApprox)}</div></div>${p.deathYear?`<div class="field"><div class="label">${t.died}</div><div class="value">${yearText(p.deathYear,p.deathApprox)}</div></div>`:''}
+  <div class="field"><div class="label">${t.birthplace}</div><div class="value">${escapeHtml(textVal(p.birthplace,PLACE))}</div></div><div class="field"><div class="label">${t.faithLabel}</div><div class="value">${faithHtml(p)}</div></div>
+  <div class="field"><div class="label">${t.nationality}</div><div class="value">${escapeHtml(textVal(p.nationality,NATION))}</div></div>${aliases}<div class="field"><div class="label">${t.notes}</div><div class="value">${escapeHtml(p.notes)}</div></div><div class="field"><div class="label">${t.refs}</div><div class="value refs">${escapeHtml(p.pages)}</div></div>
+  <div class="field"><div class="label">${t.focusLabel}</div><div class="focus-tools"><button class="focus-btn ${activeFocusMode==='immediate'?'active':''}" data-fmode="immediate">${t.focusImmediate}</button><button class="focus-btn ${activeFocusMode==='ancestors'?'active':''}" data-fmode="ancestors">${t.focusAncestors}</button><button class="focus-btn ${activeFocusMode==='descendants'?'active':''}" data-fmode="descendants">${t.focusDescendants}</button><button class="focus-btn ${activeFocusMode==='all'?'active':''}" data-fmode="all">${t.focusAll}</button></div></div>
+  <div class="field"><div class="label">${t.relations}</div><div class="relation-list">${rels||'—'}</div></div>`;
+  panel.classList.add('open');document.getElementById('closePanel').onclick=()=>closePanel();panelInner.querySelectorAll('[data-focus]').forEach(btn=>btn.onclick=()=>focusPerson(btn.dataset.focus));panelInner.querySelectorAll('[data-fmode]').forEach(btn=>btn.onclick=()=>{activeFocusMode=btn.dataset.fmode;document.getElementById('focusMode').value=activeFocusMode;applyFocus(p.id);openPanel(node)});cy.resize();
 }
-function closePanel(){panel.classList.remove('open');cy.$('.dim,.focus-edge,.focus-node').removeClass('dim focus-edge focus-node');cy.resize()}
-function focusPerson(id){const n=cy.getElementById(id); if(!n.length)return; cy.nodes('.person').unselect(); n.select(); cy.animate({center:{eles:n},zoom:Math.max(cy.zoom(),.8)},{duration:250}); openPanel(n);}
+function closePanel(){panel.classList.remove('open');activePersonId=null;clearFocus(true);cy.resize()}
+function focusPerson(id){const n=cy.getElementById(id);if(!n.length||n.hasClass('hidden-filter'))return;cy.nodes('.person').unselect();n.select();activePersonId=id;applyFocus(id);cy.animate({center:{eles:n},zoom:Math.max(cy.zoom(),.72)},{duration:220});openPanel(n)}
 
-cy.on('tap','node.person',evt=>{
-  const n=evt.target; cy.elements('.person,.relation').addClass('dim'); n.removeClass('dim').addClass('focus-node');
-  const connected=n.connectedEdges('.relation'); connected.removeClass('dim').addClass('focus-edge'); connected.connectedNodes('.person').removeClass('dim').addClass('focus-node'); openPanel(n);
-});
-cy.on('tap',evt=>{if(evt.target===cy){cy.nodes('.person').unselect();closePanel()}});
+function parentsOf(id){return RELATIONS.filter(r=>r.type==='parent'&&r.target===id).map(r=>r.source)}
+function childrenOf(id){return RELATIONS.filter(r=>r.type==='parent'&&r.source===id).map(r=>r.target)}
+function traversal(start,direction){const seen=new Set([start]),queue=[start];while(queue.length){const id=queue.shift();const next=direction==='up'?parentsOf(id):childrenOf(id);next.forEach(x=>{if(!seen.has(x)){seen.add(x);queue.push(x)}})}return seen}
+function allConnected(start){const seen=new Set([start]),queue=[start];while(queue.length){const id=queue.shift();RELATIONS.filter(r=>r.source===id||r.target===id).forEach(r=>{const x=r.source===id?r.target:r.source;if(!seen.has(x)){seen.add(x);queue.push(x)}})}return seen}
+function focusSet(id){
+  if(activeFocusMode==='ancestors'){const s=traversal(id,'up');connectedRelations(id).filter(r=>['spouse','partner'].includes(r.type)).forEach(r=>s.add(r.source===id?r.target:r.source));return s;}
+  if(activeFocusMode==='descendants'){const s=traversal(id,'down');connectedRelations(id).filter(r=>['spouse','partner'].includes(r.type)).forEach(r=>s.add(r.source===id?r.target:r.source));return s;}
+  if(activeFocusMode==='all')return allConnected(id);
+  const s=new Set([id]);connectedRelations(id).forEach(r=>s.add(r.source===id?r.target:r.source));return s;
+}
+function applyFocus(id){
+  clearFocus(false);const keep=focusSet(id);cy.nodes('.person').forEach(n=>{if(!keep.has(n.id()))n.addClass('dim');else n.addClass('focus-node')});
+  cy.edges().forEach(e=>{if(e.hasClass('year-guide'))return;const s=e.source(),t=e.target();let relevant=false;if(s.hasClass('person')&&t.hasClass('person'))relevant=keep.has(s.id())&&keep.has(t.id());else if(s.hasClass('union-node')||t.hasClass('union-node')){const u=s.hasClass('union-node')?s:t,info=[...unionMap.values()].find(x=>x.id===u.id());relevant=info&&[...info.parents,...info.children].some(x=>keep.has(x));}if(!relevant)e.addClass('dim');else e.addClass('focus-edge')});
+}
+function clearFocus(unselect=false){cy.$('.dim,.focus-edge,.focus-node').removeClass('dim focus-edge focus-node');if(unselect)cy.nodes('.person').unselect()}
+
+cy.on('tap','node.person',evt=>{const n=evt.target;cy.nodes('.person').unselect();n.select();activePersonId=n.id();applyFocus(n.id());openPanel(n)});
+cy.on('tap',evt=>{if(evt.target===cy){closePanel()}});
 
 function applyFilters(){
-  const scope=document.getElementById('scope').value, faith=document.getElementById('faith').value, q=document.getElementById('search').value.trim().toLowerCase();
-  cy.nodes('.person').forEach(n=>{
-    const p=personById(n.id());
-    const scopeOk=scope==='all'||(scope==='historical'?p.role==='historical':p.role!=='historical');
-    const faithOk=faith==='all'||p.religionOrigin===faith||p.religionCurrent===faith;
-    const hay=[p.name,...p.aliases,p.family,p.notes,textVal(p.birthplace,PLACE),textVal(p.nationality,NATION)].join(' ').toLowerCase();
-    n.toggleClass('hidden-filter',!(scopeOk&&faithOk&&(!q||hay.includes(q))));
-  });
-  cy.edges('.relation').forEach(e=>{const visible=e.source().visible()&&e.target().visible();e.toggleClass('hidden-filter',!visible)});
-  cy.nodes('.year-marker,.grid-anchor,.family-label').removeClass('hidden-filter'); cy.edges('.year-guide').removeClass('hidden-filter'); updateStats();
+  const scope=document.getElementById('scope').value,branch=document.getElementById('branch').value,faith=document.getElementById('faith').value,q=document.getElementById('search').value.trim().toLowerCase();
+  cy.nodes('.person').forEach(n=>{const p=personById(n.id()),scopeOk=scope==='all'||(scope==='historical'?p.role==='historical':p.role!=='historical'),branchOk=branch==='all'||branchFor(p)===branch,faithOk=faith==='all'||p.religionOrigin===faith||p.religionCurrent===faith,hay=[p.name,...p.aliases,p.family,p.notes,textVal(p.birthplace,PLACE),textVal(p.nationality,NATION)].join(' ').toLowerCase();n.toggleClass('hidden-filter',!(scopeOk&&branchOk&&faithOk&&(!q||hay.includes(q))));});
+  cy.edges('.orig-edge').forEach(e=>e.toggleClass('hidden-filter',!(isPersonVisible(e.source().id())&&isPersonVisible(e.target().id()))));updateHelperVisibility();
+  if(activePersonId&&!isPersonVisible(activePersonId))closePanel();updateStats();
 }
-function updateStats(){const t=I18N[lang]; const visible=cy?cy.nodes('.person').filter(n=>n.visible()).length:PEOPLE.length; document.getElementById('stats').textContent=`${visible}/${PEOPLE.length} ${t.visible} · ${RELATIONS.length} links`;}
+function fitReadable(){
+  const visible=logicalVisiblePeople();if(!visible.length)return;cy.fit(visible,80);if(currentView!=='network'){const z=Math.min(cy.zoom()*1.18,.92);cy.zoom({level:z,renderedPosition:{x:document.getElementById('cy').clientWidth/2,y:document.getElementById('cy').clientHeight/2}})}
+}
+function updateStats(){const t=I18N[lang],visible=logicalVisiblePeople().length,view=currentView==='family'?t.viewFamily:currentView==='timeline'?t.viewTimeline:t.viewNetwork;document.getElementById('stats').textContent=`${visible}/${PEOPLE.length} ${t.visible} · ${RELATIONS.length} ${t.links} · ${view}`}
 
-document.getElementById('search').addEventListener('input',()=>{applyFilters();const q=document.getElementById('search').value.trim();if(q){const m=cy.nodes('.person').filter(n=>n.visible());if(m.length)cy.animate({fit:{eles:m,padding:85}},{duration:220})}});
-document.getElementById('scope').addEventListener('change',applyFilters);document.getElementById('faith').addEventListener('change',applyFilters);
-document.getElementById('fit').addEventListener('click',()=>cy.animate({fit:{eles:cy.elements(':visible'),padding:70}},{duration:280}));
-document.getElementById('reset').addEventListener('click',()=>{document.getElementById('search').value='';document.getElementById('scope').value='all';document.getElementById('faith').value='all';applyFilters();closePanel();cy.animate({fit:{eles:cy.elements(':visible'),padding:70}},{duration:280})});
-document.getElementById('language').addEventListener('change',e=>{const oldScope=document.getElementById('scope').value||'all',oldFaith=document.getElementById('faith').value||'all';lang=e.target.value;refreshUI();document.getElementById('scope').value=oldScope;document.getElementById('faith').value=oldFaith;applyFilters()});
-window.addEventListener('resize',()=>{cy.resize()});
+// UI events
+document.querySelectorAll('.view-tab').forEach(btn=>btn.addEventListener('click',()=>{currentView=btn.dataset.view;applyView()}));
+document.getElementById('search').addEventListener('input',()=>{applyFilters();const q=document.getElementById('search').value.trim();if(q){const m=logicalVisiblePeople();if(m.length)cy.animate({fit:{eles:m,padding:95}},{duration:190})}});
+['scope','branch','faith'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{applyFilters();if(currentView==='network')applyView();else setTimeout(()=>fitReadable(),10)}));
+document.getElementById('focusMode').addEventListener('change',e=>{activeFocusMode=e.target.value;if(activePersonId){applyFocus(activePersonId);openPanel(cy.getElementById(activePersonId))}});
+document.getElementById('legendToggle').addEventListener('click',()=>document.getElementById('legend').classList.toggle('open'));
+document.getElementById('fit').addEventListener('click',fitReadable);
+document.getElementById('reset').addEventListener('click',()=>{document.getElementById('search').value='';document.getElementById('scope').value='narrative';document.getElementById('branch').value='all';document.getElementById('faith').value='all';document.getElementById('focusMode').value='immediate';activeFocusMode='immediate';currentView='family';applyFilters();applyView();closePanel();});
+document.getElementById('language').addEventListener('change',e=>{lang=e.target.value;refreshUI();applyFilters()});window.addEventListener('resize',()=>{cy.resize()});
 
-refreshUI(); applyFilters(); setTimeout(()=>cy.fit(cy.elements(':visible'),70),80);
+// Initial state: narrative characters first. Historical/backstory figures remain one click away.
+document.getElementById('scope').innerHTML='<option value="narrative">narrative</option>';document.getElementById('scope').value='narrative';
+refreshUI();document.getElementById('scope').value='narrative';document.getElementById('branch').value='all';document.getElementById('faith').value='all';document.getElementById('focusMode').value='immediate';applyFilters();applyView();setTimeout(fitReadable,90);
+
 </script>
 </body>
 </html>
