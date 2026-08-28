@@ -311,6 +311,11 @@ Object.assign(I18N.en,{
 });
 
 let lang='sq', currentView='family', activePersonId=null, activeFocusMode='immediate';
+// Keep a handle to the force-directed network layout. Cytoscape layouts mutate node
+// positions; if the user switches views while/after COSE is running, we must stop it
+// explicitly before restoring the deterministic genealogy coordinates.
+let activeNetworkLayout=null;
+let viewChangeToken=0;
 const rootStyle=getComputedStyle(document.documentElement);
 const faithColor=k=>({christian:rootStyle.getPropertyValue('--christian'),muslim:rootStyle.getPropertyValue('--muslim'),jewish:rootStyle.getPropertyValue('--jewish'),other:rootStyle.getPropertyValue('--other')}[k]||rootStyle.getPropertyValue('--other')).trim();
 const faithGlyph=k=>({christian:'✝',muslim:'☪',jewish:'✡',other:'?'}[k]||'?');
@@ -452,10 +457,14 @@ function unionPosition(u,positions){
   return {x,y:Math.min(cyy-28,py+36)};
 }
 function applyPresetPositions(kind){
-  const positions=kind==='timeline'?timelinePositions:familyPositions;
+  const source=kind==='timeline'?timelinePositions:familyPositions;
+  // Clone every coordinate on every restore. This prevents any layout engine from
+  // accidentally reusing/mutating objects that represent our canonical tree layout.
+  const positions={};
+  PEOPLE.forEach(p=>{const q=source[p.id];positions[p.id]={x:q.x,y:q.y};});
   cy.batch(()=>{
-    PEOPLE.forEach(p=>cy.getElementById(p.id).position(positions[p.id]));
-    unionMap.forEach(u=>cy.getElementById(u.id).position(unionPosition(u,positions)));
+    PEOPLE.forEach(p=>cy.getElementById(p.id).position({x:positions[p.id].x,y:positions[p.id].y}));
+    unionMap.forEach(u=>{const q=unionPosition(u,positions);cy.getElementById(u.id).position({x:q.x,y:q.y});});
     cy.nodes('.lane-label').forEach((n,i)=>n.position({x:X0+i*LANE_W,y:62}));
     if(kind==='family'){
       familyMeta.bands.forEach(y=>{const py=familyMeta.bandMeta[y].top;cy.getElementById(`band_${y}`).position({x:92,y:py});cy.getElementById(`band_r_${y}`).position({x:DECO_RIGHT,y:py});});
@@ -469,19 +478,33 @@ function restoreBandLabels(){familyMeta.bands.forEach(y=>cy.getElementById(`band
 function logicalVisiblePeople(){return cy.nodes('.person').filter(n=>!n.hasClass('hidden-filter')&&!n.hasClass('hidden-view'))}
 function isPersonVisible(id){const n=cy.getElementById(id);return n.length&&!n.hasClass('hidden-filter')&&!n.hasClass('hidden-view')}
 function applyView(){
+  const token=++viewChangeToken;
+  // Stop any animation or force-directed layout left by the previous view before
+  // touching positions. This is the key to making Family Tree a true reset.
+  try{cy.stop();}catch(e){}
+  if(activeNetworkLayout){try{activeNetworkLayout.stop();}catch(e){} activeNetworkLayout=null;}
+
   cy.elements().removeClass('hidden-view');
   if(currentView==='network'){
     cy.nodes('.union-node,.lane-label,.year-label,.guide-anchor').addClass('hidden-view');cy.edges('.family-helper,.year-guide').addClass('hidden-view');
     cy.edges('.orig-edge').removeClass('hidden-view');
     const eles=cy.elements().filter(e=>e.isNode()?e.hasClass('person')&&!e.hasClass('hidden-filter'):e.hasClass('orig-edge')&&!e.hasClass('hidden-filter'));
-    if(eles.nodes().length){eles.layout({name:'cose',animate:false,fit:false,padding:70,nodeRepulsion:780000,idealEdgeLength:145,edgeElasticity:80,gravity:.16,numIter:900,randomize:true}).run();setTimeout(()=>fitReadable(),20);}
+    if(eles.nodes().length){
+      activeNetworkLayout=eles.layout({name:'cose',animate:false,fit:false,padding:70,nodeRepulsion:780000,idealEdgeLength:145,edgeElasticity:80,gravity:.16,numIter:900,randomize:true});
+      activeNetworkLayout.one('layoutstop',()=>{if(token===viewChangeToken&&currentView==='network'){activeNetworkLayout=null;fitReadable();}});
+      activeNetworkLayout.run();
+    }
   }else{
     cy.nodes('.union-node,.lane-label,.year-label,.guide-anchor').removeClass('hidden-view');cy.edges('.family-helper,.year-guide').removeClass('hidden-view');
     cy.edges('.orig-edge').addClass('hidden-view');
-    // Keep marriages/partners visible in the tree; the duplicated parent edges stay hidden.
+    // Keep marriages/partners visible in the tree; duplicated parent edges stay hidden.
     cy.edges('.orig-edge.rel-spouse,.orig-edge.rel-partner').removeClass('hidden-view');
-    applyPresetPositions(currentView);if(currentView==='family')restoreBandLabels();
-    updateHelperVisibility();setTimeout(()=>fitReadable(),20);
+    applyPresetPositions(currentView);
+    if(currentView==='family')restoreBandLabels();
+    updateHelperVisibility();
+    // Fit only after the preset coordinates have been committed, and ignore stale
+    // callbacks belonging to a view that the user has already left.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{if(token===viewChangeToken&&currentView!=='network')fitReadable();}));
   }
   document.querySelectorAll('.view-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===currentView));
   document.getElementById('viewHint').textContent=currentView==='family'?I18N[lang].hintFamily:currentView==='timeline'?I18N[lang].hintTimeline:I18N[lang].hintNetwork;
