@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Të jetosh në ishull — Harta e Personazheve</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#17130f;--ink-panel:#211b15;--ink-panel-2:#2a221a;--ink-line:#3b3126;
   --parchment:#eee4ce;--parchment-dim:#b9ad94;--gold:#c9a45f;
   --christian:#b94c32;--muslim:#43815a;--jewish:#477da5;--other:#8b806b;
   --family-line:#b8ad96;--kin:#7e90a8;--social:#71685e;
-  --font-display:'Newsreader',Georgia,serif;--font-body:'IBM Plex Sans',system-ui,sans-serif;--font-mono:'IBM Plex Mono',monospace;
+  --font-display:'Newsreader',Georgia,serif;--font-body:'IBM Plex Sans','Noto Color Emoji',system-ui,sans-serif;--font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--ink);color:var(--parchment);font-family:var(--font-body);overflow:hidden}
 button,input,select{font:inherit} button{color:inherit} #app{height:100vh;display:flex;flex-direction:column}
@@ -78,13 +78,13 @@ button.control{cursor:pointer;transition:.14s ease} button.control:hover{border-
     <button id="findConnection" class="control icon-btn" type="button" aria-expanded="false"></button>
     <button id="share" class="control icon-btn" type="button"></button>
     <div class="export-wrap">
-      <button id="exportToggle" class="control" type="button" aria-haspopup="true" aria-expanded="false"></button>
+      <button id="exportToggle" class="control icon-btn" type="button" aria-haspopup="true" aria-expanded="false"></button>
       <div id="exportMenu" class="export-menu" role="menu">
         <button id="exportPng" class="export-option" type="button" role="menuitem"></button>
         <button id="exportSvg" class="export-option" type="button" role="menuitem"></button>
       </div>
     </div>
-    <button id="reset" class="control" type="button"></button>
+    <button id="reset" class="control icon-btn" type="button"></button>
   </div>
 </header>
 <div id="main">
@@ -554,7 +554,10 @@ parentRels.filter(r=>!unionForParentChild.has(`${r.source}|${r.target}`)).forEac
 
 // Decorations are graph elements, so they pan and zoom with the family tree.
 const DECO_RIGHT=laneX(LANE_ORDER[LANE_ORDER.length-1])+220;
-LANE_ORDER.forEach((lane,i)=>elements.push({data:{id:`lane_${i}`,lane,label:tr(LANE_LABEL[lane])},position:{x:laneX(lane),y:62},classes:'lane-label'}));
+LANE_ORDER.forEach((lane,i)=>{
+  elements.push({data:{id:`lane_top_${i}`,lane,placement:'top',label:tr(LANE_LABEL[lane])},position:{x:laneX(lane),y:62},classes:'lane-label'});
+  elements.push({data:{id:`lane_bottom_${i}`,lane,placement:'bottom',label:tr(LANE_LABEL[lane])},position:{x:laneX(lane),y:familyMeta.totalHeight-55},classes:'lane-label'});
+});
 familyMeta.bands.forEach(y=>{
   const py=familyMeta.bandMeta[y].top;
   elements.push({data:{id:`band_${y}`,label:`${y}–${y+24}`},position:{x:92,y:py},classes:'year-label'});
@@ -565,7 +568,7 @@ familyMeta.bands.forEach(y=>{
 const cy=cytoscape({
   container:document.getElementById('cy'),elements,layout:{name:'preset'},wheelSensitivity:.18,minZoom:.18,maxZoom:2.5,autoungrabify:true,boxSelectionEnabled:false,
   style:[
-    {selector:'node.person',style:{'shape':'round-rectangle','width':NODE_W,'height':NODE_H,'background-color':'#2a231b','background-opacity':1,'border-width':2,'border-color':'data(originColor)','underlay-color':'data(currentColor)','underlay-opacity':.88,'underlay-padding':4,'label':'data(label)','color':'#eee4ce','font-family':'IBM Plex Sans','font-size':10.5,'font-weight':500,'text-valign':'center','text-halign':'center','text-wrap':'wrap','text-max-width':150,'line-height':1.25,'z-index':10}},
+    {selector:'node.person',style:{'shape':'round-rectangle','width':NODE_W,'height':NODE_H,'background-color':'#2a231b','background-opacity':1,'border-width':2,'border-color':'data(originColor)','underlay-color':'data(currentColor)','underlay-opacity':.88,'underlay-padding':4,'label':'data(label)','color':'#eee4ce','font-family':'IBM Plex Sans, Noto Color Emoji','font-size':10.5,'font-weight':500,'text-valign':'center','text-halign':'center','text-wrap':'wrap','text-max-width':150,'line-height':1.25,'z-index':10}},
     {selector:'node.person[confidence="medium"]',style:{'border-style':'dashed'}},
     {selector:'node.person:selected',style:{'width':176,'height':60,'background-color':'#33291f','font-size':11,'underlay-padding':6}},
     {selector:'node.union-node',style:{'shape':'diamond','width':7,'height':7,'background-color':'#c9a45f','border-width':0,'label':'','z-index':7}},
@@ -620,7 +623,10 @@ function applyPresetPositions(kind){
   const nodePositions={};
   PEOPLE.forEach(p=>{nodePositions[p.id]={x:positions[p.id].x,y:positions[p.id].y};});
   unionMap.forEach(u=>{nodePositions[u.id]=unionPosition(u,positions);});
-  cy.nodes('.lane-label').forEach(n=>{nodePositions[n.id()]={x:laneX(n.data('lane')),y:62};});
+  cy.nodes('.lane-label').forEach(n=>{
+    const bottomY=kind==='family'?familyMeta.totalHeight-55:(110+(maxYear-minYear)*7.4+95);
+    nodePositions[n.id()]={x:laneX(n.data('lane')),y:n.data('placement')==='bottom'?bottomY:62};
+  });
   familyMeta.bands.forEach(y=>{
     const py=kind==='family'?familyMeta.bandMeta[y].top:110+(y-minYear)*7.4;
     nodePositions[`band_${y}`]={x:92,y:py};
@@ -705,7 +711,9 @@ function toolIcon(kind){
   const paths={
     overview:'<path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><path d="M9 9h6v6H9z"/>',
     share:'<path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 12v7h14v-7"/>',
-    connection:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.3 10.8 7.4-3.6M8.3 13.2l7.4 3.6"/>'
+    connection:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.3 10.8 7.4-3.6M8.3 13.2l7.4 3.6"/>',
+    export:'<path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M5 20h14"/>',
+    clear:'<path d="M4 7h12a5 5 0 0 1 0 10H9"/><path d="m7 4-3 3 3 3"/>'
   };
   return `<svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[kind]||''}</svg>`;
 }
@@ -713,7 +721,7 @@ function setIconButton(id,kind,label){const el=document.getElementById(id);if(!e
 
 function refreshUI(){
   const t=I18N[lang];document.documentElement.lang=lang;document.title=t.title;document.getElementById('title').textContent=t.title;document.getElementById('subtitle').textContent=t.subtitle;
-  document.getElementById('search').placeholder=t.search;setIconButton('fit','overview',t.overview);setIconButton('findConnection','connection',t.findConnection);document.getElementById('reset').textContent=t.reset;document.getElementById('legendToggle').textContent=t.legendButton;setIconButton('share','share',t.share);document.getElementById('exportToggle').textContent=t.export;document.getElementById('exportPng').textContent=t.exportPng;document.getElementById('exportSvg').textContent=t.exportSvg;
+  document.getElementById('search').placeholder=t.search;setIconButton('fit','overview',t.overview);setIconButton('findConnection','connection',t.findConnection);setIconButton('reset','clear',t.reset);document.getElementById('legendToggle').textContent=t.legendButton;setIconButton('share','share',t.share);setIconButton('exportToggle','export',t.export);document.getElementById('exportPng').textContent=t.exportPng;document.getElementById('exportSvg').textContent=t.exportSvg;
   document.querySelector('[data-view="family"]').textContent=t.viewFamily;document.querySelector('[data-view="timeline"]').textContent=t.viewTimeline;document.querySelector('[data-view="network"]').textContent=t.viewNetwork;
   const scope=document.getElementById('scope'),branch=document.getElementById('branch'),faith=document.getElementById('faith'),focus=document.getElementById('focusMode');
   const oldScope=scope.value||'narrative',oldBranch=branch.value||'all',oldFaith=faith.value||'all',oldFocus=focus.value||'immediate';
@@ -971,7 +979,13 @@ function applyFilters(){
   if(activePersonId&&!isPersonVisible(activePersonId))closePanel();updateStats();
 }
 function fitReadable(){
-  const visible=logicalVisiblePeople();if(!visible.length)return;cy.fit(visible,80);if(currentView!=='network'){const z=Math.min(cy.zoom()*1.18,.92);cy.zoom({level:z,renderedPosition:{x:document.getElementById('cy').clientWidth/2,y:document.getElementById('cy').clientHeight/2}})}
+  const visible=logicalVisiblePeople();if(!visible.length)return;
+  let fitEles=visible;
+  if(currentView!=='network'){
+    const visibleLanes=new Set(visible.map(n=>laneFor(personById(n.id()))));
+    cy.nodes('.lane-label').forEach(n=>{if(n.data('placement')==='bottom'&&visibleLanes.has(n.data('lane')))fitEles=fitEles.union(n);});
+  }
+  cy.fit(fitEles,80);if(currentView!=='network'){const z=Math.min(cy.zoom()*1.18,.92);cy.zoom({level:z,renderedPosition:{x:document.getElementById('cy').clientWidth/2,y:document.getElementById('cy').clientHeight/2}})}
 }
 function updateStats(){const t=I18N[lang],visible=logicalVisiblePeople().length,view=currentView==='family'?t.viewFamily:currentView==='timeline'?t.viewTimeline:t.viewNetwork;document.getElementById('stats').textContent=`${visible}/${PEOPLE.length} ${t.visible} · ${RELATIONS.length} ${t.links} · ${view}`}
 
@@ -992,6 +1006,11 @@ document.getElementById('reset').addEventListener('click',()=>{clearConnection(f
 document.getElementById('language').addEventListener('change',e=>{lang=e.target.value;refreshUI();applyFilters();scheduleUrlSync()});window.addEventListener('resize',()=>{cy.resize();updateSemanticZoom(true)});
 
 // Initial state can be reconstructed from a shared hash URL.
+// Windows browsers often render Unicode regional-indicator pairs as “AL”, “GR”, etc.
+// Loading Noto Color Emoji as a webfont makes country flags consistent across desktop
+// platforms. Force a redraw once webfonts are ready because Cytoscape labels use canvas.
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>{try{cy.style().update();cy.resize();updateSemanticZoom(true);}catch(e){}});}
+
 const initialState=stateFromHash();suppressUrlSync=true;lang=initialState.lang;document.getElementById('language').value=lang;
 refreshUI();
 document.getElementById('scope').value=['all','narrative','historical'].includes(initialState.scope)?initialState.scope:'narrative';
