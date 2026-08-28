@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Të jetosh në ishull — Harta e Personazheve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#191510;           /* deep, warm ink-black background — the "night sea" the island sits in */
+    --ink-panel:#231d16;     /* slightly lifted panel surface */
+    --ink-line:#3a3126;      /* hairline / border on dark */
+    --parchment:#ECE3CE;     /* warm off-white — text, the "island" itself */
+    --parchment-dim:#B8AC91; /* secondary text */
+    --gold:#C8A35E;          /* accent — marriage lines, ticks, highlights */
+    --christian:#B5482F;     /* muted brick red */
+    --muslim:#3E7A52;        /* muted mosque green */
+    --jewish:#3E6E93;        /* muted teal-blue */
+    --other:#8A7F68;         /* unknown / unspecified faith */
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--ink);color:var(--parchment);font-family:var(--font-body);overflow:hidden;}
+
+  #app{display:flex;flex-direction:column;height:100vh;}
+
+  header{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:18px 24px 12px;border-bottom:1px solid var(--ink-line);
+    flex-wrap:wrap;gap:10px;
+  }
+  header h1{
+    font-family:var(--font-display);font-weight:600;font-style:italic;
+    font-size:22px;margin:0;letter-spacing:.2px;color:var(--parchment);
+  }
+  header .sub{font-size:12px;color:var(--parchment-dim);font-family:var(--font-mono);}
+  #search{
+    background:var(--ink-panel);border:1px solid var(--ink-line);color:var(--parchment);
+    padding:7px 12px;border-radius:3px;font-family:var(--font-body);font-size:13px;width:220px;
+  }
+  #search::placeholder{color:var(--parchment-dim);}
+
+  #main{flex:1;display:flex;min-height:0;position:relative;}
+
+  #axis{
+    width:52px;flex:none;position:relative;border-right:1px solid var(--ink-line);
+  }
+  .tick{
+    position:absolute;left:0;right:8px;text-align:right;
+    font-family:var(--font-mono);font-size:11px;color:var(--parchment-dim);
+    border-top:1px solid var(--ink-line);padding-top:2px;
+  }
+
+  #cy{flex:1;min-width:0;}
+
+  #legend{
+    position:absolute;left:64px;bottom:16px;background:rgba(35,29,22,.92);
+    border:1px solid var(--ink-line);border-radius:4px;padding:10px 14px;
+    font-size:12px;line-height:1.7;backdrop-filter:blur(2px);
+  }
+  #legend .row{display:flex;align-items:center;gap:8px;}
+  .swatch{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none;}
+  #legend .line{width:18px;height:0;border-top:2px solid var(--parchment-dim);display:inline-block;}
+  #legend .line.marriage{border-top:2px dashed var(--gold);}
+
+  #panel{
+    width:0;overflow:hidden;flex:none;border-left:1px solid var(--ink-line);
+    background:var(--ink-panel);transition:width .18s ease;
+  }
+  #panel.open{width:300px;}
+  #panel-inner{padding:22px;width:300px;}
+  #panel h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:20px;margin:0 0 4px;}
+  #panel .field{margin-top:14px;}
+  #panel .label{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--parchment-dim);}
+  #panel .value{font-size:14px;margin-top:2px;}
+  #panel .close{position:absolute;top:16px;right:16px;cursor:pointer;color:var(--parchment-dim);font-family:var(--font-mono);font-size:12px;background:none;border:none;}
+  #panel-wrap{position:relative;}
+
+  .empty-hint{color:var(--parchment-dim);font-size:13px;padding:22px;font-style:italic;font-family:var(--font-display);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>Të jetosh në ishull — harta e personazheve</h1>
+      <div class="sub">SESIONI 2/~9 · faqet 1–40 nga 388 · të dhëna reale, verifikoji kundrejt referencave të faqeve</div>
+    </div>
+    <input id="search" type="text" placeholder="kërko emër…">
+  </header>
+  <div id="main">
+    <div id="axis"></div>
+    <div id="cy"></div>
+    <div id="legend">
+      <div class="row"><span class="swatch" style="background:var(--christian)"></span> i krishterë</div>
+      <div class="row"><span class="swatch" style="background:var(--muslim)"></span> mysliman</div>
+      <div class="row"><span class="swatch" style="background:var(--jewish)"></span> hebre</div>
+      <div class="row"><span class="line"></span> prind → fëmijë</div>
+      <div class="row"><span class="line marriage"></span> martesë</div>
+      <div class="row"><span class="line" style="border-top:2px dotted #7C8FA6"></span> vëlla/motër</div>
+      <div class="row" style="color:var(--parchment-dim);font-size:11px;">unaza = feja e lindjes · mbushja = feja aktuale</div>
+    </div>
+    <div id="panel-wrap"><div id="panel">
+      <div id="panel-inner"><div class="empty-hint">kliko një person…</div></div>
+    </div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+<script>
+/* ============================================================
+   SKEMA E TË DHËNAVE — plotësoje këtë array me personazhet reale
+   që nxjerr nga libri (shih planin: NotebookLM + Gemini + verifikim manual).
+
+   Çdo person:
+   {
+     id: string (unik),
+     name: string,
+     birthYear: number (afërsisht — përdor një vlerësim nëse s'thuhet saktë),
+     deathYear: number ose null,
+     birthplace: string,
+     religionOrigin: "christian" | "muslim" | "jewish" | "other",
+     religionCurrent: "christian" | "muslim" | "jewish" | "other",
+     religionChangeYear: number ose null,
+     nationality: string (emër),
+     flag: string (emoji flamuri, p.sh. "🇦🇱"),
+     family: string (emër dege/familjeje — përdoret vetëm për renditjen horizontale),
+     notes: string (shënime, referencë faqeje, etj.)
+   }
+
+   Marrëdhëniet:
+   { source: id, target: id, type: "parent" | "spouse" | "sibling" }
+   Për "parent", source = prindi, target = fëmija.
+   ============================================================ */
+
+// SESIONI 1–2 — nxjerrë nga faqet 1–40 (konvertimi i Ibrahimit, rrethimi, dhe rrëfimi i gjatë
+// i Arianit Komnenit për origjinën e familjes dhe udhëtimet e tij në Stamboll/Lesbos/Kretë).
+// Vitet e lindjes JANË TË GJITHA VLERËSIME (nuk jepen data eksplicite për shumicën), bazuar në:
+//  - moshën relative të personazheve në skenë + vitet historike që Arianiti përmend vetë (1704, 1709, 1730, 1753...)
+//  - Ali Tepelena = Ali Pashë Tepelena, figurë historike reale, lindur 1740 (kjo NUK është vlerësim, është fakt historik)
+// Çdo hyrje ka faqe reference te "notes" — verifiko dhe korrigjo lirisht.
+// HAPUR/PENDING: emri i gruas së Ibrahimit; nëna e vërtetë e Sarës (Hëna apo Sheba?); fati i fëmijës së Shebës.
+const PEOPLE = [
+  {id:"ibrahimi", name:"Ibrahimi", birthYear:1728, deathYear:null, birthplace:"Fshat i paemërtuar (afër Tepelenës)", religionOrigin:"christian", religionCurrent:"muslim", religionChangeYear:1765, nationality:"Shqiptare", flag:"🇦🇱", family:"Ibrahimi", notes:"Personazhi qendror. Bëhet mysliman në kreun e parë; merr emrin 'Ibrahim' nga imami por refuzon të marrë mbiemrin fetar 'Abdullah'. (f. 4–9)"},
+  {id:"gruaja_ibrahimit", name:"E shoqja e Ibrahimit (emri ende i paverifikuar)", birthYear:1730, deathYear:null, birthplace:"Suli (fis Xhavella)", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare (Suliote)", flag:"🇦🇱", family:"Ibrahimi", notes:"Nga fisi i krishterë i Xhavellave të Sulit; daja i saj është Llambro Xhavella. Emri i saj personal s'është përmendur ende në f. 1–20 — pritet verifikim në sesionet e ardhshme. (f. 6–9)"},
+  {id:"vasili", name:"Vasili", birthYear:1726, deathYear:null, birthplace:"E njëjta fshat si Ibrahimi", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Ibrahimi", notes:"Vëllai i Ibrahimit. I ngërthyer mes besnikërisë familjare dhe presionit të fshatit; ndërmjetëson me pleqësinë. (f. 11, 14–16)"},
+  {id:"hana", name:"Hana", birthYear:1747, deathYear:null, birthplace:"E njëjta fshat, në shtëpinë e Arianit Komnenit", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Ibrahimi", notes:"KORRIGJIM nga Sesioni 1: del se është mbesa e Arianit Komnenit (bija e Gjergj Komnenit dhe Kostandinës), jo person i palidhur — emri i vjen nga gjyshja Hëna. Gruaja e Vasilit. E dëbon me duar bosh gruan e Ibrahimit kur kjo kërkon ndihmë. (f. 13, 35)"},
+  {id:"thanasi", name:"Thanasi", birthYear:1750, deathYear:null, birthplace:"E njëjta fshat si Ibrahimi", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Ibrahimi", notes:"Djali i madh i Ibrahimit (emri konfirmohet f. 20). Merr peng Mihalin e Zoicës si përgjigje ndaj poshtërimit të të atit. Ibrahimi ka disa fëmijë të tjerë të papërmendur ende me emër. (f. 14–20)"},
+  {id:"mihali_zoices", name:"Mihali i Zoicës", birthYear:1728, deathYear:null, birthplace:"E njëjta fshat si Ibrahimi", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Fqinjë", notes:"Fqinji i Ibrahimit; hedh dërrasa mbi dritare pas konvertimit të tij. I biri i Zoicës. Merret peng nga Thanasi. Thashetheme e paverifikuar në f. 7 sugjeronte se edhe ai do konvertohej. (f. 7, 8, 12, 14–16)"},
+  {id:"zoica", name:"Zoica", birthYear:1705, deathYear:null, birthplace:"E njëjta fshat si Ibrahimi", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Fqinjë", notes:"Nëna e Mihalit — përmendet vetëm përmes patronimikut 'Mihali i Zoicës', jo drejtpërdrejt në skenë."},
+  {id:"ali_tepelena", name:"Ali Tepelena", birthYear:1740, deathYear:1822, birthplace:"Tepelenë", religionOrigin:"muslim", religionCurrent:"muslim", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Tepelena", notes:"Figurë historike reale (Ali Pashë Tepelena, 1740–1822), këtu ende i ri, jo akoma pasha. Bektashi, jo sunit. Stërgjyshi i tij Hyseni lidhet me legjendën e dervishit Demir Hani. (f. 17–20)"},
+  {id:"arianit_komneni", name:"Arianit Komneni", birthYear:1673, deathYear:null, birthplace:"E njëjta fshat, afër Janinës", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Kryetari i pleqësisë; 92 vjeç 'sot'. Pasardhës i largët i dinastisë bizantine Komnene (përmes Thoma Komnenit të Himarës, vrarë 1486) dhe i Arianit Komnenit 'të Madh' (~1400, aleat/vjehrri i Skënderbeut) — hendek disa brezash i papërmendur mes 1486 dhe ~1650. Udhëtoi tri herë në Stamboll (1704–05 me të atin, që vdiq atje; 1730; 1753). Rrëfimi i tij vetjak zë f. 22–40 — histori shumë e pasur, e drejtoj vetëm dukje këtu; e rekomandoj një kalim të dedikuar më vonë për paraardhësit e largët. (f. 20, 22–40)"},
+  {id:"hena_komneni", name:"Hëna", birthYear:1690, deathYear:1735, birthplace:"E njëjta fshat", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Gruaja e Arianit Komnenit (martuar 1709). 'E bukur si diell por pa shumë mish, e ftohtë si hëna' sipas nënës së Arianitit. Lëngon dhe vdes pas sëmundjeje të gjatë (viti i vdekjes vlerësim, pas 1730). Stërgjyshi i saj erdhi bashkë me stërgjyshin e Arianit kur u themelua fshati. (f. 33, 35)"},
+  {id:"gjergj_komneni", name:"Gjergj Komneni", birthYear:1710, deathYear:null, birthplace:"E njëjta fshat", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Djali i madh i Arianit Komnenit dhe Hënës, i quajtur si gjyshi i madh Arianit Komneni. Kujdeset vetë për të ëmën në sëmundje; nga hidhërimi krijon vendin e quajtur 'Guri i Hirit'. Martohet me Kostandinën. (f. 35)"},
+  {id:"mihal_komneni", name:"Mihal Komneni", birthYear:1713, deathYear:null, birthplace:"E njëjta fshat", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Djali i dytë i Arianit Komnenit, i quajtur si Mihali që themeloi principatën e parë shqiptare të krishterë në Janinë (1204). Dërgohet në Akademinë e Voskopojës dhe jeton atje. (f. 27, 35)"},
+  {id:"gjon_komneni", name:"Gjon Komneni", birthYear:1716, deathYear:null, birthplace:"E njëjta fshat", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Djali i tretë i Arianit Komnenit, i quajtur si i biri i Skënderbeut. Merret me karvanët e letrës për shtypshkronjën e Voskopojës — i zoti me tregtarët dhe hajdutët e rrugës. (f. 27, 35)"},
+  {id:"kostandina", name:"Kostandina", birthYear:1712, deathYear:null, birthplace:"E njëjta fshat (bonjake, rritur në shtëpinë e Arianit Komnenit)", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"Bonjake me sy jeshilë; babai i saj u vra në Kretë (viti i saktë i paqartë — mospërputhje e mundshme kronologjike me rrethimin e 1669, kërkon verifikim). Martohet me Gjergj Komnenin pas shumë vitesh pa fëmijë. (f. 35)"},
+  {id:"sara_komneni", name:"Sara", birthYear:1750, deathYear:null, birthplace:"E panjohur (shih shënimin)", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Shqiptare", flag:"🇦🇱", family:"Komneni", notes:"E paraqitur si 'vajza ime e vetme' e Arianit Komnenit, 15 vjeçe. HIPOTEZË E FORTË (E PAKONFIRMUAR): nëna e saj mund të mos jetë Hëna (e cila del pa u përmendur si e gjallë kur Sara shfaqet) por SHEBA — shih fëmijën që Sheba pret në f. 40. Duhet verifikuar në sesionet e ardhshme. (f. 22, 27)"},
+  {id:"sheba", name:"Sheba", birthYear:1710, deathYear:null, birthplace:"Selanik", religionOrigin:"jewish", religionCurrent:"jewish", religionChangeYear:null, nationality:"Greke (hebreje nga Selaniku)", flag:"🇬🇷", family:"Sheba/Jorgo", notes:"Gruaja e Jorgo Mavromatisit; familja e ikur nga Spanja (dëbimi i çifutëve). Gjyshi rabin, babai tregtar. Fillon një lidhje me Arianit Komnenin në Stamboll/Lesbos 1753 dhe mbetet shtatzënë prej tij — shih shënimin te Sara. Ende shtatzënë kur mbaron f. 40 (po shkojnë në Kretë). (f. 33–40)"},
+  {id:"jorgo_mavromatisi", name:"Jorgo Mavromatisi", birthYear:1698, deathYear:null, birthplace:"Selanik", religionOrigin:"christian", religionCurrent:"christian", religionChangeYear:null, nationality:"Greke", flag:"🇬🇷", family:"Sheba/Jorgo", notes:"Tregtar vere nga Selaniku, bashkëshorti i Shebës. Burgoset në Lesbos (Mitilini) për kontrabandë vere — dënohet me 3 vjet. (f. 33–38)"},
+];
+
+const RELATIONS = [
+  {source:"arianit_komneni", target:"hena_komneni", type:"spouse"},
+  {source:"arianit_komneni", target:"gjergj_komneni", type:"parent"},
+  {source:"hena_komneni", target:"gjergj_komneni", type:"parent"},
+  {source:"arianit_komneni", target:"mihal_komneni", type:"parent"},
+  {source:"hena_komneni", target:"mihal_komneni", type:"parent"},
+  {source:"arianit_komneni", target:"gjon_komneni", type:"parent"},
+  {source:"hena_komneni", target:"gjon_komneni", type:"parent"},
+  {source:"arianit_komneni", target:"sara_komneni", type:"parent"},
+  {source:"gjergj_komneni", target:"kostandina", type:"spouse"},
+  {source:"gjergj_komneni", target:"hana", type:"parent"},
+  {source:"kostandina", target:"hana", type:"parent"},
+  {source:"jorgo_mavromatisi", target:"sheba", type:"spouse"},
+  {source:"vasili", target:"ibrahimi", type:"sibling"},
+  {source:"vasili", target:"hana", type:"spouse"},
+  {source:"ibrahimi", target:"gruaja_ibrahimit", type:"spouse"},
+  {source:"ibrahimi", target:"thanasi", type:"parent"},
+  {source:"gruaja_ibrahimit", target:"thanasi", type:"parent"},
+  {source:"zoica", target:"mihali_zoices", type:"parent"},
+];
+
+const COLORS = {christian:"var(--christian)", muslim:"var(--muslim)", jewish:"var(--jewish)", other:"var(--other)"};
+function resolveColor(v){
+  const s = getComputedStyle(document.documentElement);
+  const map = {christian:s.getPropertyValue('--christian'), muslim:s.getPropertyValue('--muslim'), jewish:s.getPropertyValue('--jewish'), other:s.getPropertyValue('--other')};
+  return (map[v] || map.other).trim();
+}
+
+// --- Layout: Y = viti i lindjes (timeline), X = kolonë sipas familjes ---
+const years = PEOPLE.map(p=>p.birthYear);
+const minY = Math.min(...years), maxY = Math.max(...years);
+const topPad = 60, bottomPad = 60;
+const cyEl = document.getElementById('cy');
+function yFor(year){
+  const h = cyEl.clientHeight || 700;
+  const usable = h - topPad - bottomPad;
+  return topPad + ( (year - minY) / (maxY - minY || 1) ) * usable;
+}
+
+const families = [...new Set(PEOPLE.map(p=>p.family))];
+const colWidth = 190;
+// spread siblings/spouses in same family+year band slightly so they don't overlap
+const bandCount = {};
+function xFor(person){
+  const famIndex = families.indexOf(person.family);
+  const key = person.family+"-"+Math.round(person.birthYear/6);
+  bandCount[key] = (bandCount[key]||0);
+  const offset = bandCount[key] * 46;
+  bandCount[key]++;
+  return 100 + famIndex*colWidth + offset;
+}
+
+const elements = [];
+PEOPLE.forEach(p=>{
+  elements.push({
+    data:{
+      id:p.id,
+      label:`${p.flag} ${p.name}`,
+      colorCurrent: resolveColor(p.religionCurrent),
+      colorOrigin: resolveColor(p.religionOrigin),
+      ...p
+    },
+    position:{x:xFor(p), y:yFor(p.birthYear)}
+  });
+});
+RELATIONS.forEach(r=>{
+  elements.push({data:{id:r.source+"-"+r.target+"-"+r.type, source:r.source, target:r.target, type:r.type}});
+});
+
+const cy = cytoscape({
+  container: cyEl,
+  elements: elements,
+  layout: {name:'preset'},
+  wheelSensitivity: 0.3,
+  style: [
+    { selector:'node', style:{
+        'background-color':'data(colorCurrent)',
+        'border-color':'data(colorOrigin)',
+        'border-width':3,
+        'width':30,'height':30,
+        'label':'data(label)',
+        'color':'#ECE3CE',
+        'font-family':'IBM Plex Sans',
+        'font-size':10,
+        'text-valign':'bottom',
+        'text-margin-y':4,
+        'text-wrap':'none'
+    }},
+    { selector:'edge[type="parent"]', style:{
+        'width':1.6,'line-color':'#B8AC91','target-arrow-color':'#B8AC91',
+        'target-arrow-shape':'triangle','curve-style':'bezier','arrow-scale':0.7,'opacity':0.85
+    }},
+    { selector:'edge[type="spouse"]', style:{
+        'width':1.6,'line-color':'#C8A35E','line-style':'dashed','curve-style':'bezier','opacity':0.85
+    }},
+    { selector:'edge[type="sibling"]', style:{
+        'width':1.2,'line-color':'#7C8FA6','line-style':'dotted','curve-style':'bezier','opacity':0.75
+    }},
+    { selector:'node:selected', style:{'border-width':5,'width':38,'height':38} },
+    { selector:'.dim', style:{'opacity':0.15} }
+  ]
+});
+
+// --- axis ticks (synced to same year->pixel scale) ---
+function drawAxis(){
+  const axis = document.getElementById('axis');
+  axis.innerHTML = '';
+  const step = 20; // vjet
+  const start = Math.floor(minY/step)*step;
+  for(let y = start; y<=maxY+step; y+=step){
+    const t = document.createElement('div');
+    t.className='tick';
+    t.style.top = yFor(y)+'px';
+    t.textContent = y;
+    axis.appendChild(t);
+  }
+}
+drawAxis();
+window.addEventListener('resize', ()=>{ drawAxis(); });
+
+// --- detail panel ---
+const panel = document.getElementById('panel');
+const panelInner = document.getElementById('panel-inner');
+function religionLabel(v){ return {christian:'i krishterë', muslim:'mysliman', jewish:'hebre', other:'e paspecifikuar'}[v] || v; }
+
+cy.on('tap', 'node', evt=>{
+  const d = evt.target.data();
+  let religionHtml = `<div class="value">${religionLabel(d.religionCurrent)}</div>`;
+  if(d.religionOrigin !== d.religionCurrent){
+    religionHtml = `<div class="value">${religionLabel(d.religionOrigin)} → ${religionLabel(d.religionCurrent)}${d.religionChangeYear? ' ('+d.religionChangeYear+')':''}</div>`;
+  }
+  panelInner.innerHTML = `
+    <button class="close" onclick="document.getElementById('panel').classList.remove('open')">MBYLL ✕</button>
+    <h2>${d.flag} ${d.name}</h2>
+    <div class="field"><div class="label">Lindur</div><div class="value">${d.birthYear}${d.deathYear? ' — vdes '+d.deathYear:''} · ${d.birthplace}</div></div>
+    <div class="field"><div class="label">Feja</div>${religionHtml}</div>
+    <div class="field"><div class="label">Kombësia</div><div class="value">${d.nationality}</div></div>
+    ${d.notes? `<div class="field"><div class="label">Shënime</div><div class="value">${d.notes}</div></div>`:''}
+  `;
+  panel.classList.add('open');
+});
+
+// --- search / highlight ---
+document.getElementById('search').addEventListener('input', e=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ cy.elements().removeClass('dim'); return; }
+  cy.nodes().forEach(n=>{
+    const match = n.data('name').toLowerCase().includes(q);
+    n.toggleClass('dim', !match);
+  });
+  const matches = cy.nodes().filter(n=>n.data('name').toLowerCase().includes(q));
+  if(matches.length){ cy.animate({fit:{eles:matches, padding:80}}, {duration:250}); }
+});
+</script>
+</body>
+</html>
