@@ -4,8 +4,8 @@ An interactive, multilingual character map for **_Të jetosh në ishull_** by **
 
 The project visualizes the novel's characters across generations, families, religions, name changes, and narrative relationships. It is designed to work both as a **genealogical family tree** and as an **exploration tool** for a novel with a large cast and several interconnected family branches.
 
-- **Live project:** https://kthimjo.github.io/tejetoshneishull/
-- **Repository:** https://github.com/kthimjo/tejetoshneishull
+- **Live project:** https://tejetoshneishull.github.io/
+- **Repository:** https://github.com/tejetoshneishull/tejetoshneishull.github.io
 - **Current dataset:** 67 character nodes and 104 encoded relationships
 - **Languages:** Albanian, Italian, English
 
