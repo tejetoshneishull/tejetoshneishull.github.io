@@ -329,15 +329,17 @@ function nodeLabel(p){
 }
 
 // Separate family lanes make the genealogy easier to scan horizontally.
-// Xhavella and Bilali intentionally have their own columns. Voskopoja is kept
-// at the far right because its family relationships are comparatively independent.
+// Family lanes are deliberately generous: bridge characters must fit between columns
+// without covering the cards inside either family. Mihali / Zoica now has its own lane.
+// Voskopoja stays at the far right because its genealogy is comparatively independent.
 // Ana Xhavella bridges Xhavella ↔ Ibrahimi; Fatimja bridges Ibrahimi ↔ Bilali.
-const LANE_ORDER=['History','Komneni','Xhavella','Ibrahim','Bilali','BenishiBakri','Voskopoja'];
+const LANE_ORDER=['History','Komneni','MihaliZoica','Xhavella','Ibrahim','Bilali','BenishiBakri','Voskopoja'];
 const LANE_LABEL={
   History:{sq:'Histori / paraardhës',it:'Storia / antenati',en:'History / ancestors'},
   Komneni:{sq:'Komnenët',it:'Komneni',en:'Komneni'},
   Xhavella:{sq:'Xhavellat',it:'Xhavella',en:'Xhavella'},
-  Ibrahim:{sq:'Ibrahimi · fshati',it:'Ibrahim · villaggio',en:'Ibrahim · village'},
+  MihaliZoica:{sq:'Mihali · Zoica',it:'Mihali · Zoica',en:'Mihali · Zoica'},
+  Ibrahim:{sq:'Familja e Ibrahimit',it:'Famiglia di Ibrahim',en:'Ibrahim family'},
   Voskopoja:{sq:'Voskopoja · mjeshtrit',it:'Voscopoli · maestranze',en:'Voskopoja · builders'},
   BenishiBakri:{sq:'Benishi · Bakri',it:'Benishi · Bakri',en:'Benishi · Bakri'},
   Bilali:{sq:'Bilali',it:'Bilal',en:'Bilal'}
@@ -347,6 +349,7 @@ function laneFor(p){
   if(p.role==='historical'||f.includes('historik')||f.includes('Stamboll · historik'))return'History';
   if(['Komneni','Sheba / Komneni','Mavromatis','Kretë','Komneni · Kretë','Komneni / Kurila'].includes(f))return'Komneni';
   if(f==='Xhavella'||p.id==='ana_xhavella')return'Xhavella';
+  if(f==='Mihali / Zoica')return'MihaliZoica';
   if(['Voskopoja','Kurila / Voskopoja','Mjeshtrit'].includes(f))return'Voskopoja';
   if(['Benishi','Bakri','Bakri / Benishi'].includes(f))return'BenishiBakri';
   if(['Bilali','Bilali / Ibrahimi'].includes(f))return'Bilali';
@@ -363,7 +366,22 @@ function branchFor(p){
 }
 
 const minYear=Math.min(...PEOPLE.map(p=>p.birthYear)), maxYear=Math.max(...PEOPLE.map(p=>p.birthYear));
-const NODE_W=166,NODE_H=54,LANE_W=350,X0=220;
+const NODE_W=166,NODE_H=54,PAIR_OFFSET=78,X0=220;
+// Most lanes stay compact, but the two gaps that contain bridge characters are wider.
+// This leaves a real empty corridor around Ana Xhavella and Fatimja without making
+// the entire graph unnecessarily wide.
+const NORMAL_LANE_GAP=360, BRIDGE_LANE_GAP=560;
+const LANE_X={};
+let laneCursor=X0;
+LANE_ORDER.forEach((lane,i)=>{
+  if(i>0){
+    const prev=LANE_ORDER[i-1];
+    const bridgeGap=(prev==='Xhavella'&&lane==='Ibrahim')||(prev==='Ibrahim'&&lane==='Bilali');
+    laneCursor+=bridgeGap?BRIDGE_LANE_GAP:NORMAL_LANE_GAP;
+  }
+  LANE_X[lane]=laneCursor;
+});
+const laneX=lane=>LANE_X[lane];
 const familyPositions={}, timelinePositions={};
 // In the family-tree view, couples that fall in the same 25-year band are deliberately
 // placed side-by-side. This prevents a spouse line from cutting diagonally through unrelated
@@ -405,21 +423,21 @@ function buildFamilyPositions(){
     const rows=rowsByKey.get(`${lane}|${b}`)||[];
     rows.forEach((row,rowIndex)=>row.forEach((person,col)=>{
       // A singleton is centered in its lane; a two-person row uses symmetric slots.
-      const offset=row.length===1?0:(col?94:-94);
-      const cx=X0+li*LANE_W+offset,cy=bandMeta[b].top+48+rowIndex*72;
+      const offset=row.length===1?0:(col?PAIR_OFFSET:-PAIR_OFFSET);
+      const cx=laneX(lane)+offset,cy=bandMeta[b].top+48+rowIndex*72;
       familyPositions[person.id]={x:cx,y:cy};
     }));
   }));
 
   // Bridge characters sit halfway between their birth-family and married-family lanes.
   if(familyPositions.ana_xhavella){
-    const xXhavella=X0+LANE_ORDER.indexOf('Xhavella')*LANE_W;
-    const xIbrahim=X0+LANE_ORDER.indexOf('Ibrahim')*LANE_W;
+    const xXhavella=laneX('Xhavella');
+    const xIbrahim=laneX('Ibrahim');
     familyPositions.ana_xhavella.x=(xXhavella+xIbrahim)/2;
   }
   if(familyPositions.fatimja){
-    const xIbrahim=X0+LANE_ORDER.indexOf('Ibrahim')*LANE_W;
-    const xBilali=X0+LANE_ORDER.indexOf('Bilali')*LANE_W;
+    const xIbrahim=laneX('Ibrahim');
+    const xBilali=laneX('Bilali');
     familyPositions.fatimja.x=(xIbrahim+xBilali)/2;
   }
   return {bands,bandMeta,totalHeight:yCursor+80};
@@ -429,19 +447,19 @@ function buildTimelinePositions(){
   const bucketUse={};
   PEOPLE.slice().sort((a,b)=>a.birthYear-b.birthYear).forEach(p=>{
     const lane=laneFor(p), bucket=Math.round(p.birthYear/8),key=`${lane}|${bucket}`,idx=bucketUse[key]||0;bucketUse[key]=idx+1;
-    const x=X0+LANE_ORDER.indexOf(lane)*LANE_W+(idx%2?82:-82);
+    const x=laneX(lane)+(idx%2?PAIR_OFFSET:-PAIR_OFFSET);
     const y=110+(p.birthYear-minYear)*7.4+Math.floor(idx/2)*58;
     timelinePositions[p.id]={x,y};
   });
   // Preserve the bridge positions in the timeline view as well.
   if(timelinePositions.ana_xhavella){
-    const xXhavella=X0+LANE_ORDER.indexOf('Xhavella')*LANE_W;
-    const xIbrahim=X0+LANE_ORDER.indexOf('Ibrahim')*LANE_W;
+    const xXhavella=laneX('Xhavella');
+    const xIbrahim=laneX('Ibrahim');
     timelinePositions.ana_xhavella.x=(xXhavella+xIbrahim)/2;
   }
   if(timelinePositions.fatimja){
-    const xIbrahim=X0+LANE_ORDER.indexOf('Ibrahim')*LANE_W;
-    const xBilali=X0+LANE_ORDER.indexOf('Bilali')*LANE_W;
+    const xIbrahim=laneX('Ibrahim');
+    const xBilali=laneX('Bilali');
     timelinePositions.fatimja.x=(xIbrahim+xBilali)/2;
   }
 }
@@ -484,8 +502,8 @@ unionMap.forEach((u,key)=>{
 parentRels.filter(r=>!unionForParentChild.has(`${r.source}|${r.target}`)).forEach((r,i)=>elements.push({data:{id:`single_${i}`,source:r.source,target:r.target,type:'single-parent'},classes:'family-helper single-parent'}));
 
 // Decorations are graph elements, so they pan and zoom with the family tree.
-const DECO_RIGHT=X0+(LANE_ORDER.length-1)*LANE_W+220;
-LANE_ORDER.forEach((lane,i)=>elements.push({data:{id:`lane_${i}`,lane,label:tr(LANE_LABEL[lane])},position:{x:X0+i*LANE_W,y:62},classes:'lane-label'}));
+const DECO_RIGHT=laneX(LANE_ORDER[LANE_ORDER.length-1])+220;
+LANE_ORDER.forEach((lane,i)=>elements.push({data:{id:`lane_${i}`,lane,label:tr(LANE_LABEL[lane])},position:{x:laneX(lane),y:62},classes:'lane-label'}));
 familyMeta.bands.forEach(y=>{
   const py=familyMeta.bandMeta[y].top;
   elements.push({data:{id:`band_${y}`,label:`${y}–${y+24}`},position:{x:92,y:py},classes:'year-label'});
@@ -541,7 +559,7 @@ function applyPresetPositions(kind){
   const nodePositions={};
   PEOPLE.forEach(p=>{nodePositions[p.id]={x:positions[p.id].x,y:positions[p.id].y};});
   unionMap.forEach(u=>{nodePositions[u.id]=unionPosition(u,positions);});
-  cy.nodes('.lane-label').forEach((n,i)=>{nodePositions[n.id()]={x:X0+i*LANE_W,y:62};});
+  cy.nodes('.lane-label').forEach(n=>{nodePositions[n.id()]={x:laneX(n.data('lane')),y:62};});
   familyMeta.bands.forEach(y=>{
     const py=kind==='family'?familyMeta.bandMeta[y].top:110+(y-minYear)*7.4;
     nodePositions[`band_${y}`]={x:92,y:py};
