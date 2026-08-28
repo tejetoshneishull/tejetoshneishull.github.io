@@ -331,9 +331,11 @@ function nodeLabel(p){
 // Separate family lanes make the genealogy easier to scan horizontally.
 // Family lanes are deliberately generous: bridge characters must fit between columns
 // without covering the cards inside either family. Mihali / Zoica now has its own lane.
-// Voskopoja stays at the far right because its genealogy is comparatively independent.
+// Voskopoja is placed first, immediately beside Komneni, so the Kurila ↔ Komneni
+// family connection reads clearly. The unnamed elder sister of Marin Kurila is treated
+// as a bridge character between the Voskopoja and Komneni lanes.
 // Ana Xhavella bridges Xhavella ↔ Ibrahimi; Fatimja bridges Ibrahimi ↔ Bilali.
-const LANE_ORDER=['History','Komneni','MihaliZoica','Xhavella','Ibrahim','Bilali','BenishiBakri','Voskopoja'];
+const LANE_ORDER=['Voskopoja','Komneni','History','MihaliZoica','Xhavella','Ibrahim','Bilali','BenishiBakri'];
 const LANE_LABEL={
   History:{sq:'Histori / paraardhës',it:'Storia / antenati',en:'History / ancestors'},
   Komneni:{sq:'Komnenët',it:'Komneni',en:'Komneni'},
@@ -376,7 +378,9 @@ let laneCursor=X0;
 LANE_ORDER.forEach((lane,i)=>{
   if(i>0){
     const prev=LANE_ORDER[i-1];
-    const bridgeGap=(prev==='Xhavella'&&lane==='Ibrahim')||(prev==='Ibrahim'&&lane==='Bilali');
+    const bridgeGap=(prev==='Voskopoja'&&lane==='Komneni')||
+                    (prev==='Xhavella'&&lane==='Ibrahim')||
+                    (prev==='Ibrahim'&&lane==='Bilali');
     laneCursor+=bridgeGap?BRIDGE_LANE_GAP:NORMAL_LANE_GAP;
   }
   LANE_X[lane]=laneCursor;
@@ -429,7 +433,12 @@ function buildFamilyPositions(){
     }));
   }));
 
-  // Bridge characters sit halfway between their birth-family and married-family lanes.
+  // Bridge characters sit halfway between the two family lanes they connect.
+  if(familyPositions.mihal_wife){
+    const xVoskopoja=laneX('Voskopoja');
+    const xKomneni=laneX('Komneni');
+    familyPositions.mihal_wife.x=(xVoskopoja+xKomneni)/2;
+  }
   if(familyPositions.ana_xhavella){
     const xXhavella=laneX('Xhavella');
     const xIbrahim=laneX('Ibrahim');
@@ -452,6 +461,11 @@ function buildTimelinePositions(){
     timelinePositions[p.id]={x,y};
   });
   // Preserve the bridge positions in the timeline view as well.
+  if(timelinePositions.mihal_wife){
+    const xVoskopoja=laneX('Voskopoja');
+    const xKomneni=laneX('Komneni');
+    timelinePositions.mihal_wife.x=(xVoskopoja+xKomneni)/2;
+  }
   if(timelinePositions.ana_xhavella){
     const xXhavella=laneX('Xhavella');
     const xIbrahim=laneX('Ibrahim');
